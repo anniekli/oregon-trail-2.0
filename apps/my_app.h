@@ -3,6 +3,7 @@
 #ifndef FINALPROJECT_APPS_MYAPP_H_
 #define FINALPROJECT_APPS_MYAPP_H_
 
+#include <choreograph/Choreograph.h>
 #include <cinder/app/App.h>
 
 
@@ -15,6 +16,7 @@ class MyApp : public cinder::app::App {
   void update() override;
   void draw() override;
   void keyDown(cinder::app::KeyEvent) override;
+  
 };
 
 }  // namespace myapp
