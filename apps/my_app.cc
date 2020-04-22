@@ -28,6 +28,7 @@ using cinder::ColorA;
 using cinder::Rectf;
 using cinder::TextBox;
 using cinder::app::KeyEvent;
+using namespace choreograph;
 
 #if defined(CINDER_COCOA_TOUCH)
   const char kNormalFont[] = "Arial";
@@ -48,6 +49,9 @@ MyApp::MyApp() {
 
 void MyApp::setup() {
   draw_menu = false;
+  
+
+  timeline().apply( 0.0f, 10.0f, 1.5f, EaseOutCubic() );
 }
 
 void MyApp::update() {
@@ -55,7 +59,7 @@ void MyApp::update() {
   choreograph::Timeline timeline;
 // Create a Motion with a Connection to target and modify
 // the Motion’s underlying Sequence.
-  timeline.apply( &target )
+  timeline.apply( 1.5f, EaseOutCubic() )
           .then<choreograph::Hold>(cinder::vec3( 1.0 ), 1.0 )
           .then<choreograph::RampTo>(cinder::vec3( 100 ), 3.0 );
   timeline.step( 1.0 / 60.0 );
@@ -76,7 +80,7 @@ void PrintText(const string& text, const C& color, const cinder::ivec2& size,
   cinder::gl::color(color);
   
   auto box = TextBox()
-          .alignment(TextBox::CENTER)
+          .alignment(TextBox::LEFT)
           .font(cinder::Font(kNormalFont, 30))
           .size(size)
           .color(color)
@@ -104,8 +108,8 @@ void MyApp::DrawMenu() {
   PrintText("Menu:", color, size, {center.x, (center.y - 200)});
   for (const string option : menu_options) {
     std::stringstream ss;
-    ss << option;
-    PrintText(ss.str(), color, size, {center.x, (center.y - 200) + (++row) * 50});
+    ss << std::to_string(++row) << ". " << option;
+    PrintText(ss.str(), color, size, {center.x, (center.y - 200) + row * 50});
   }
   }
 
