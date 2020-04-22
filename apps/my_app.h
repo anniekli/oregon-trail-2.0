@@ -6,6 +6,17 @@
 #include <choreograph/Choreograph.h>
 #include <cinder/app/App.h>
 
+#include <cinder/gl/gl.h>
+#include "cinder/audio/Voice.h"
+#include "cinder/Timer.h"
+#include "leaderboard.h"
+
+#include <random>
+#include <string>
+#include <vector>
+
+using std::vector;
+using std::string;
 
 namespace myapp {
 
@@ -17,6 +28,18 @@ class MyApp : public cinder::app::App {
   void draw() override;
   void keyDown(cinder::app::KeyEvent) override;
   
+  void DrawMenu();
+
+private:
+  bool draw_menu;
+  const vector<string> menu_options = {
+          "Map",
+          "Practice",
+          "Check Inventory",
+          "Quit"
+  };
+  
+  void DrawBackground();
 };
 
 }  // namespace myapp

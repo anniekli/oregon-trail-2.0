@@ -5,13 +5,50 @@
 
 #include <cinder/app/App.h>
 
-namespace myapp {
+#include <cinder/Font.h>
+#include <cinder/Text.h>
+#include <cinder/Vector.h>
+#include "cinder/Timer.h"
+#include <cinder/gl/draw.h>
+#include <cinder/gl/gl.h>
+#include "cinder/audio/Voice.h"
 
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <string>
+
+
+
+namespace myapp {
+  
+using std::string;
+using cinder::Color;
+using cinder::ColorA;
+using cinder::Rectf;
+using cinder::TextBox;
 using cinder::app::KeyEvent;
 
-MyApp::MyApp() { }
+#if defined(CINDER_COCOA_TOUCH)
+  const char kNormalFont[] = "Arial";
+const char kBoldFont[] = "Arial-BoldMT";
+const char kDifferentFont[] = "AmericanTypewriter";
+#elif defined(CINDER_LINUX)
+  const char kNormalFont[] = "Arial Unicode MS";
+const char kBoldFont[] = "Arial Unicode MS";
+const char kDifferentFont[] = "Purisa";
+#else
+  const char kNormalFont[] = "Arial";
+  const char kBoldFont[] = "Arial Bold";
+  const char kDifferentFont[] = "Papyrus";
+#endif
 
-void MyApp::setup() { }
+MyApp::MyApp() {
+}
+
+void MyApp::setup() {
+  draw_menu = false;
+}
 
 void MyApp::update() {
   choreograph::Output<cinder::vec3> target;
@@ -24,8 +61,61 @@ void MyApp::update() {
   timeline.step( 1.0 / 60.0 );
 }
 
-void MyApp::draw() { }
+void MyApp::draw() {
+  cinder::gl::clear();
+  DrawBackground();
+  
+  if (draw_menu) {
+    DrawMenu();
+  }
+}
+  
+template <typename C>
+void PrintText(const string& text, const C& color, const cinder::ivec2& size,
+               const cinder::vec2& loc) {
+  cinder::gl::color(color);
+  
+  auto box = TextBox()
+          .alignment(TextBox::CENTER)
+          .font(cinder::Font(kNormalFont, 30))
+          .size(size)
+          .color(color)
+          .backgroundColor(ColorA(0, 0, 0, 0))
+          .text(text);
+  
+  const auto box_size = box.getSize();
+  const cinder::vec2 locp = {loc.x - box_size.x / 2, loc.y - box_size.y / 2};
+  const auto surface = box.render();
+  const auto texture = cinder::gl::Texture::create(surface);
+  cinder::gl::draw(texture, locp);
+}
 
-void MyApp::keyDown(KeyEvent event) { }
+void MyApp::DrawBackground() {
+  cinder::gl::clear(Color(0, 0, 0));
+}
+
+void MyApp::DrawMenu() {
+  
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 50};
+  const Color color = Color::white();
+  
+  size_t row = 0;
+  PrintText("Menu:", color, size, {center.x, (center.y - 200)});
+  for (const string option : menu_options) {
+    std::stringstream ss;
+    ss << option;
+    PrintText(ss.str(), color, size, {center.x, (center.y - 200) + (++row) * 50});
+  }
+  }
+
+void MyApp::keyDown(KeyEvent event) {
+  switch (event.getCode()) {
+    case KeyEvent::KEY_SPACE:
+      draw_menu = !draw_menu;
+      break;
+  }
+}
+
 
 }  // namespace myapp
