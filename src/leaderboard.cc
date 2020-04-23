@@ -19,10 +19,10 @@ namespace myapp {
            ");";
   }
   
-  void LeaderBoard::AddScoreToLeaderBoard(const Player& player) {
+  void LeaderBoard::AddScoreToLeaderBoard(Player& player) {
     db_ << "INSERT INTO leaderboard (name,score,time) VALUES (?,?,?);"
-        << player.name
-        << player.score;
+        << player.GetName()
+        << player.GetScore();
   }
   
   vector<Player> GetPlayers(sqlite::database_binder* rows) {
@@ -46,11 +46,11 @@ namespace myapp {
     return GetPlayers(&rows);
   }
   
-  vector<Player> LeaderBoard::RetrieveHighScores(const Player& player,
+  vector<Player> LeaderBoard::RetrieveHighScores(Player& player,
                                                  const size_t limit) {
     auto rows = db_ << "SELECT * FROM leaderboard WHERE name = ? "
                        "ORDER BY score DESC LIMIT ?;"
-                    << player.name
+                    << player.GetName()
                     << limit;
     return GetPlayers(&rows);
   }

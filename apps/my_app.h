@@ -32,14 +32,19 @@ class MyApp : public cinder::app::App {
 
 private:
   bool draw_menu;
+  bool draw_inventory;
   const vector<string> menu_options = {
           "Map",
           "Practice",
           "Check Inventory",
           "Quit"
   };
+  Player player;
+  string name;
   
   void DrawBackground();
+  
+  void DrawInventory();
 };
 
 }  // namespace myapp

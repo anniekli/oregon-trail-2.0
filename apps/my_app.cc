@@ -49,9 +49,10 @@ MyApp::MyApp() {
 
 void MyApp::setup() {
   draw_menu = false;
+  draw_inventory = false;
   
 
-  timeline().apply( 0.0f, 10.0f, 1.5f, EaseOutCubic() );
+//  timeline().apply( 0.0f, 10.0f, 1.5f, EaseOutCubic() );
 }
 
 void MyApp::update() {
@@ -59,10 +60,10 @@ void MyApp::update() {
   choreograph::Timeline timeline;
 // Create a Motion with a Connection to target and modify
 // the Motion’s underlying Sequence.
-  timeline.apply( 1.5f, EaseOutCubic() )
-          .then<choreograph::Hold>(cinder::vec3( 1.0 ), 1.0 )
-          .then<choreograph::RampTo>(cinder::vec3( 100 ), 3.0 );
-  timeline.step( 1.0 / 60.0 );
+//  timeline.apply( 1.5f, EaseOutCubic() )
+//          .then<choreograph::Hold>(cinder::vec3( 1.0 ), 1.0 )
+//          .then<choreograph::RampTo>(cinder::vec3( 100 ), 3.0 );
+//  timeline.step( 1.0 / 60.0 );
 }
 
 void MyApp::draw() {
@@ -71,6 +72,10 @@ void MyApp::draw() {
   
   if (draw_menu) {
     DrawMenu();
+  }
+  
+  if (draw_inventory) {
+    DrawInventory();
   }
 }
   
@@ -111,15 +116,44 @@ void MyApp::DrawMenu() {
     ss << std::to_string(++row) << ". " << option;
     PrintText(ss.str(), color, size, {center.x, (center.y - 200) + row * 50});
   }
+}
+
+void MyApp::DrawInventory() {
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 50};
+  const Color color = Color::white();
+  
+  size_t row = 0;
+  PrintText("Inventory:", color, size, {center.x, (center.y - 200)});
+  for (std::pair<std::string, int> item : player.GetInventory()) {
+    std::stringstream items;
+    std::stringstream quantities;
+    items << std::to_string(++row) << ". " << item.first;
+    quantities << item.second;
+    PrintText(items.str(), color, size, {center.x, (center.y - 200) +
+    row * 50});
+    PrintText(quantities.str(), color, size, {center.x + 300, (center.y -
+    200) + row * 50});
   }
+}
 
 void MyApp::keyDown(KeyEvent event) {
   switch (event.getCode()) {
-    case KeyEvent::KEY_SPACE:
+    case KeyEvent::KEY_SPACE: {
       draw_menu = !draw_menu;
+      draw_inventory = false;
       break;
+    }
+    case KeyEvent::KEY_3: {
+      if (draw_menu) {
+        draw_menu = false;
+        draw_inventory = true;
+      }
+    }
   }
 }
+
+
 
 
 }  // namespace myapp

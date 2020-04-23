@@ -6,14 +6,29 @@
 #define FINALPROJECT_PLAYER_H
 
 #include <string>
+#include <map>
 
 namespace myapp {
+
+class Player {
+private:
   
-  struct Player {
-    Player(const std::string& name, size_t score) : name(name), score(score) {}
-    std::string name;
-    size_t score;
-  };
+  std::string name;
+  size_t score;
+  std::map<std::string, int> inventory;
+
+public:
+  Player();
+  Player(std::string name, size_t score);
+  
+  std::string const GetName();
+  void SetName(std::string name);
+  size_t const GetScore();
+  void SetScore(size_t score);
+  std::map<std::string, int> const GetInventory();
+  void AddToInventory(std::string item, int quantity);
+  
+};
   
 } // namespace myapp
 
