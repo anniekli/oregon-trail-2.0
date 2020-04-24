@@ -44,13 +44,16 @@ const char kDifferentFont[] = "Purisa";
   const char kDifferentFont[] = "Papyrus";
 #endif
 
-MyApp::MyApp() {
-}
+MyApp::MyApp()
+  : state_{GameState::kStart}
+{}
 
 void MyApp::setup() {
   draw_menu = false;
   draw_inventory = false;
-  
+  car_image = cinder::gl::Texture2d::create(loadImage(loadAsset("red_car.png")));
+
+
 
 //  timeline().apply( 0.0f, 10.0f, 1.5f, EaseOutCubic() );
 }
@@ -70,12 +73,14 @@ void MyApp::draw() {
   cinder::gl::clear();
   DrawBackground();
   
-  if (draw_menu) {
+  if (state_ == GameState::kMenu) {
     DrawMenu();
   }
-  
-  if (draw_inventory) {
+  if (state_ == GameState::kInventory) {
     DrawInventory();
+  }
+  if (state_ == GameState::kTraveling) {
+    DrawTravel();
   }
 }
   
@@ -97,6 +102,10 @@ void PrintText(const string& text, const C& color, const cinder::ivec2& size,
   const auto surface = box.render();
   const auto texture = cinder::gl::Texture::create(surface);
   cinder::gl::draw(texture, locp);
+}
+
+void MyApp::DrawTravel() {
+
 }
 
 void MyApp::DrawBackground() {
@@ -140,20 +149,20 @@ void MyApp::DrawInventory() {
 void MyApp::keyDown(KeyEvent event) {
   switch (event.getCode()) {
     case KeyEvent::KEY_SPACE: {
-      draw_menu = !draw_menu;
-      draw_inventory = false;
+      if (state_ != GameState::kMenu) {
+        state_ = GameState::kMenu;
+      } else {
+        state_ = GameState::kTraveling;
+      }
       break;
     }
     case KeyEvent::KEY_3: {
-      if (draw_menu) {
-        draw_menu = false;
-        draw_inventory = true;
+      if (state_ == GameState::kMenu) {
+        state_ = GameState::kInventory;
       }
     }
   }
 }
-
-
 
 
 }  // namespace myapp

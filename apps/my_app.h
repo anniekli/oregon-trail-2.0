@@ -20,6 +20,13 @@ using std::string;
 
 namespace myapp {
 
+enum class GameState {
+  kStart,
+  kTraveling,
+  kMenu,
+  kInventory
+};
+
 class MyApp : public cinder::app::App {
  public:
   MyApp();
@@ -31,7 +38,8 @@ class MyApp : public cinder::app::App {
   void DrawMenu();
 
 private:
-  bool draw_menu;
+  GameState state_;
+    bool draw_menu;
   bool draw_inventory;
   const vector<string> menu_options = {
           "Map",
@@ -41,10 +49,13 @@ private:
   };
   Player player;
   string name;
+  cinder::gl::Texture2dRef car_image;
   
   void DrawBackground();
   
   void DrawInventory();
+  
+  void DrawTravel();
 };
 
 }  // namespace myapp
