@@ -10,6 +10,8 @@
 #include "cinder/audio/Voice.h"
 #include "cinder/Timer.h"
 #include "leaderboard.h"
+#include "cinder/Timeline.h"
+#include "cinder/Tween.h"
 
 #include <random>
 #include <string>
@@ -39,8 +41,6 @@ class MyApp : public cinder::app::App {
 
 private:
   GameState state_;
-    bool draw_menu;
-  bool draw_inventory;
   const vector<string> menu_options = {
           "Map",
           "Practice",
@@ -50,6 +50,10 @@ private:
   Player player;
   string name;
   cinder::gl::Texture2dRef car_image;
+  cinder::gl::Texture2dRef background_image;
+  choreograph::Output<cinder::vec2> target;
+  
+  
   
   void DrawBackground();
   

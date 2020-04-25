@@ -12,12 +12,13 @@
 #include <cinder/gl/draw.h>
 #include <cinder/gl/gl.h>
 #include "cinder/audio/Voice.h"
+#include "cinder/Timeline.h"
 
 #include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <string>
-
+#include <Windows.h>
 
 
 namespace myapp {
@@ -49,29 +50,37 @@ MyApp::MyApp()
 {}
 
 void MyApp::setup() {
-  draw_menu = false;
-  draw_inventory = false;
+//  cinder::gl::Texture2d::create(getWindowWidth(), getWindowHeight());
   car_image = cinder::gl::Texture2d::create(loadImage(loadAsset("red_car.png")));
+  background_image = cinder::gl::Texture2d::create(loadImage(loadAsset
+          ("background_image_right.jpg")));
 
 
+  
+  
+  target = {0, getWindowWidth()};
+// Create a Motion with a Connection to target and modify
+// the Motion’s underlying Sequence.
 
-//  timeline().apply( 0.0f, 10.0f, 1.5f, EaseOutCubic() );
 }
 
 void MyApp::update() {
-  choreograph::Output<cinder::vec3> target;
   choreograph::Timeline timeline;
-// Create a Motion with a Connection to target and modify
-// the Motion’s underlying Sequence.
-//  timeline.apply( 1.5f, EaseOutCubic() )
-//          .then<choreograph::Hold>(cinder::vec3( 1.0 ), 1.0 )
-//          .then<choreograph::RampTo>(cinder::vec3( 100 ), 3.0 );
-//  timeline.step( 1.0 / 60.0 );
+  
+  timeline.apply( &target )
+          .then<RampTo>( cinder::vec2( getWindowWidth(), 2 * getWindowWidth()
+          ), 5.0);
+  timeline.step( 1.0 / 60.0 );
 }
 
 void MyApp::draw() {
   cinder::gl::clear();
   DrawBackground();
+  
+  
+  if (state_ == GameState::kTraveling) {
+    DrawTravel();
+  }
   
   if (state_ == GameState::kMenu) {
     DrawMenu();
@@ -79,9 +88,7 @@ void MyApp::draw() {
   if (state_ == GameState::kInventory) {
     DrawInventory();
   }
-  if (state_ == GameState::kTraveling) {
-    DrawTravel();
-  }
+
 }
   
 template <typename C>
@@ -105,7 +112,19 @@ void PrintText(const string& text, const C& color, const cinder::ivec2& size,
 }
 
 void MyApp::DrawTravel() {
+  cinder::gl::disableDepthRead();
+  cinder::gl::disableDepthWrite();
+  cinder::gl::enableAlphaBlending();
+  cinder::gl::color(Color::white());
+  
 
+  float x = target.value().x;
+  float x2 = target.value().y;
+  Rectf coord = {x, 0, x2, (float) getWindowHeight()};
+  const cinder::vec2 locp = {100, 100};
+  
+  cinder::gl::draw(background_image, coord);
+  cinder::gl::draw(car_image, locp);
 }
 
 void MyApp::DrawBackground() {
