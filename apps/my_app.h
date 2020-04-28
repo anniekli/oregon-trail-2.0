@@ -16,6 +16,7 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <practice_game.h>
 
 using std::vector;
 using std::string;
@@ -25,6 +26,7 @@ namespace myapp {
 enum class GameState {
   kStart,
   kTraveling,
+  kPractice,
   kMenu,
   kInventory
 };
@@ -47,18 +49,24 @@ private:
           "Check Inventory",
           "Quit"
   };
-  Player player;
-  string name;
+  Player player_;
+  PracticeGame practice_game_;
+  static const int kinput_length = 31;
+  char user_input[kinput_length];
+  const std::string player_name_;
   cinder::gl::Texture2dRef car_image;
-  cinder::gl::Texture2dRef background_image;
-  choreograph::Output<cinder::vec2> target;
+  cinder::gl::Texture2dRef background_image_right;
+  cinder::gl::Texture2dRef background_image_left;
+  choreograph::Timeline timeline;
+  choreograph::Output<float> mOffset;
+  cinder::audio::VoiceRef music_piece;
+  std::pair<std::string, std::string> music_pair;
   
   
   
   void DrawBackground();
-  
   void DrawInventory();
-  
+  void DrawPractice();
   void DrawTravel();
 };
 

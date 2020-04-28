@@ -6,18 +6,9 @@
 
 namespace myapp {
   
-  Player::Player() {
-    inventory = {{"Money", 0},
-                 {"Gas", 0},
-                 {"Hours Practiced", 0}};
-  }
-  
   Player::Player(std::string name, size_t score) {
     this->name = name;
     this->score = score;
-    inventory = {{"Money", 0},
-                 {"Gas", 0},
-                 {"Hours Practiced", 0}};
   }
 
   void Player::AddToInventory(std::string item, int quantity) {
