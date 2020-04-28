@@ -43,14 +43,17 @@ class MyApp : public cinder::app::App {
 
 private:
   GameState state_;
+  Player player_;
+  PracticeGame practice_game_;
+  
   const vector<string> menu_options = {
           "Map",
           "Practice",
           "Check Inventory",
           "Quit"
   };
-  Player player_;
-  PracticeGame practice_game_;
+  
+
   static const int kinput_length = 31;
   char user_input[kinput_length];
   const std::string player_name_;
@@ -61,13 +64,13 @@ private:
   choreograph::Output<float> mOffset;
   cinder::audio::VoiceRef music_piece;
   std::pair<std::string, std::string> music_pair;
-  
-  
+  bool check_answer;
   
   void DrawBackground();
   void DrawInventory();
   void DrawPractice();
   void DrawTravel();
+  bool CheckAnswer();
 };
 
 }  // namespace myapp

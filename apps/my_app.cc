@@ -12,7 +12,7 @@
 #include <cinder/gl/gl.h>
 #include "cinder/audio/Voice.h"
 #include <gflags/gflags.h>
-
+#include <boost/algorithm/string.hpp>
 
 #include <chrono>
 #include <cmath>
@@ -62,6 +62,7 @@ void MyApp::setup() {
           ("background_image_left.jpg")));
 
   timeline.setDefaultRemoveOnFinish(true);
+  check_answer = false;
   user_input[0] = 0;
   
   mOffset = 0.0f;
@@ -176,10 +177,25 @@ void MyApp::DrawPractice() {
   const Color color = Color::white();
   
   PrintText("Type the name of the piece.", color, size, {center.x, (center.y -200)});
-  PrintText(user_input, color, size, {center.x, (center.y -
-  175)});
+  PrintText(user_input, color, size, {center.x, (center.y - 150)});
   
-//  PrintText(user_input, color, size, {center.x, (center.y - 150)});
+  if (check_answer) {
+    if (CheckAnswer()) {
+      PrintText("Correct!", color, size, {center.x, (center.y - 100)});
+      music_piece->stop();
+    } else {
+      PrintText("Incorrect, try again!", color, size, {center.x, (center.y -
+      100)});
+      user_input[0] = 0;
+    }
+  }
+}
+
+bool MyApp::CheckAnswer() {
+  std::string str = user_input;
+  boost::to_lower(str);
+  boost::to_lower(music_pair.second);
+  return str == music_pair.second;
 }
 
 void MyApp::DrawInventory() {
@@ -201,12 +217,14 @@ void MyApp::DrawInventory() {
   }
 }
 
+
 void MyApp::keyDown(KeyEvent event) {
+  
+  // code below allows mini practice game to accept user input
   if (state_ == GameState::kPractice) {
     switch (event.getCode()) {
       case KeyEvent::KEY_RETURN: {
-        // check answer
-        user_input[0] = 0;
+        check_answer = true;
         break;
       }
       case KeyEvent::KEY_BACKSPACE: {
@@ -214,6 +232,7 @@ void MyApp::keyDown(KeyEvent event) {
         break;
       }
       default:
+        check_answer = false;
         if (strlen(user_input) < kinput_length) {
           user_input[strlen(user_input) + 1] = 0;
           user_input[strlen(user_input)] = event.getChar();
@@ -223,6 +242,7 @@ void MyApp::keyDown(KeyEvent event) {
     return;
   }
   
+  // allows user to access menu and its options
   switch (event.getCode()) {
     case KeyEvent::KEY_SPACE: {
       if (state_ != GameState::kMenu) {
@@ -234,6 +254,8 @@ void MyApp::keyDown(KeyEvent event) {
     }
     case KeyEvent::KEY_2: {
       if (state_ == GameState::kMenu) {
+        user_input[0] = 0;
+        check_answer = false;
         state_ = GameState::kPractice;
   
         music_pair = practice_game_.GetRandomPiece();
@@ -250,6 +272,4 @@ void MyApp::keyDown(KeyEvent event) {
     }
   }
 }
-
-
 }  // namespace myapp
