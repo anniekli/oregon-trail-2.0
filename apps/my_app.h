@@ -62,15 +62,19 @@ private:
   cinder::gl::Texture2dRef background_image_left;
   choreograph::Timeline timeline;
   choreograph::Output<float> mOffset;
-  cinder::audio::VoiceRef music_piece;
-  std::pair<std::string, std::string> music_pair;
   bool check_answer;
+  std::chrono::time_point<std::chrono::system_clock> practice_game_start_;
+  const size_t kpractice_time_ = 60;
+  int hours_practiced_;
+  
+  
+  
   
   void DrawBackground();
   void DrawInventory();
   void DrawPractice();
+  void DrawEndPractice() const;
   void DrawTravel();
-  bool CheckAnswer();
 };
 
 }  // namespace myapp

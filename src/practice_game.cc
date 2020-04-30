@@ -2,13 +2,38 @@
 // Created by GWC-CHC-07 on 4/27/2020.
 //
 
+#include <cinder/app/AppBase.h>
+#include <chrono>
+#include <boost/algorithm/string.hpp>
 #include "practice_game.h"
+#include "cinder/audio/Voice.h"
+
 
 namespace myapp {
 
+using std::chrono::duration_cast;
+using std::chrono::seconds;
+using std::chrono::system_clock;
+
 std::pair<std::string, std::string> PracticeGame::GetRandomPiece() {
-  auto it = music_map.begin();
-  std::next(it, rand() % music_map.size());
-  return std::make_pair(it->first, it->second);
+  int rand_index = rand() % music_files.size();
+  return std::make_pair(music_files[rand_index], music_answers[rand_index]);
 }
+
+void PracticeGame::StartNewRound() {
+  music_pair = GetRandomPiece();
+  cinder::audio::SourceFileRef src = cinder::audio::load
+          (cinder::app::loadAsset(music_pair.first));
+  music_piece = cinder::audio::Voice::create(src);
+  music_piece->start();
+}
+
+bool PracticeGame::CheckAnswer(std::string user_input) {
+  std::string str = user_input;
+  boost::to_lower(str);
+  boost::to_lower(music_pair.second);
+  return str == music_pair.second;
+}
+
+
 }

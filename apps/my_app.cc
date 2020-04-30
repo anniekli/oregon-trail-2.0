@@ -180,23 +180,19 @@ void MyApp::DrawPractice() {
   PrintText(user_input, color, size, {center.x, (center.y - 150)});
   
   if (check_answer) {
-    if (CheckAnswer()) {
+    if (practice_game_.CheckAnswer(user_input)) {
       PrintText("Correct!", color, size, {center.x, (center.y - 100)});
-      music_piece->stop();
+      hours_practiced_ += 5;
+      practice_game_.StartNewRound();
     } else {
       PrintText("Incorrect, try again!", color, size, {center.x, (center.y -
       100)});
-      user_input[0] = 0;
     }
+    user_input[0] = 0;
+    check_answer = false;
   }
 }
 
-bool MyApp::CheckAnswer() {
-  std::string str = user_input;
-  boost::to_lower(str);
-  boost::to_lower(music_pair.second);
-  return str == music_pair.second;
-}
 
 void MyApp::DrawInventory() {
   const cinder::vec2 center = getWindowCenter();
@@ -257,12 +253,7 @@ void MyApp::keyDown(KeyEvent event) {
         user_input[0] = 0;
         check_answer = false;
         state_ = GameState::kPractice;
-  
-        music_pair = practice_game_.GetRandomPiece();
-        cinder::audio::SourceFileRef src = cinder::audio::load
-                (cinder::app::loadAsset(music_pair.first));
-        music_piece = cinder::audio::Voice::create(src);
-        music_piece->start();
+        practice_game_.StartNewRound();
       }
     }
     case KeyEvent::KEY_3: {
