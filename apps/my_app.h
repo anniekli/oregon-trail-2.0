@@ -17,9 +17,12 @@
 #include <string>
 #include <vector>
 #include <practice_game.h>
+#include <nlohmann/json.hpp>
 
 using std::vector;
 using std::string;
+using json = nlohmann::json;
+
 
 namespace myapp {
 
@@ -46,14 +49,18 @@ private:
   GameState state_;
   Player player_;
   PracticeGame practice_game_;
+  std::string checkpoint_file_;
   
   const vector<string> menu_options = {
-          "Map",
+          "Continue traveling",
           "Practice",
           "Check Inventory",
           "Quit"
   };
   
+  std::ifstream inFile;
+  json checkpoints;
+  std::string current_checkpoint;
 
   static const int kinput_length = 31;
   char user_input[kinput_length];
@@ -61,6 +68,7 @@ private:
   cinder::gl::Texture2dRef car_image;
   cinder::gl::Texture2dRef background_image_right;
   cinder::gl::Texture2dRef background_image_left;
+  
   choreograph::Timeline timeline;
   choreograph::Output<float> mOffset;
   bool check_answer;
@@ -69,13 +77,13 @@ private:
   int hours_practiced_;
   
   
-  
-  
   void DrawBackground();
   void DrawInventory();
   void DrawPractice();
   void DrawEndPractice() const;
   void DrawTravel();
+  void DrawCheckpoint();
+  void IncrementDay();
 };
 
 }  // namespace myapp

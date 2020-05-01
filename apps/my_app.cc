@@ -12,6 +12,8 @@
 #include <cinder/gl/gl.h>
 #include "cinder/audio/Voice.h"
 #include <gflags/gflags.h>
+#include <iostream>
+#include <fstream>
 #include <nlohmann/json.hpp>
 
 
@@ -51,12 +53,15 @@ const char kDifferentFont[] = "Purisa";
   
   DECLARE_uint32(speed);
   DECLARE_string(name);
-
-MyApp::MyApp()
+  DECLARE_string(file);
+  
+  
+  MyApp::MyApp()
   : state_{GameState::kStart},
-  player_name_{FLAGS_name}
-
-{}
+  player_name_{FLAGS_name},
+  checkpoint_file_{FLAGS_file}
+  
+  {}
 
 void MyApp::setup() {
 //  cinder::gl::Texture2d::create(getWindowWidth(), getWindowHeight());
@@ -69,11 +74,7 @@ void MyApp::setup() {
   timeline.setDefaultRemoveOnFinish(true);
   check_answer = false;
   user_input[0] = 0;
-  
   mOffset = 0.0f;
-// Create a Motion with a Connection to target and modify
-// the Motion’s underlying Sequence.
-  
 
 }
 
@@ -84,6 +85,14 @@ void MyApp::update() {
     }
     timeline.apply( &mOffset ).rampTo((float) 2 * getWindowWidth(), 10.0);
     timeline.step( 1.0 / 60.0 );
+    
+    //Url url( "http://validurl.com/image.jpg" );
+    //myImage = gl::Texture( loadImage( loadUrl( url ) ) );
+    //
+    //Keep in mind that you should not try to draw the texture until after something has been loaded into it. We should check to make sure myImage is a valid gl::Texture before attempting to use it. We can do this with a simple if statement:
+    //
+    //if( myImage )
+    //gl::draw( myImage, getWindowBounds() );
   }
   
   if (state_ == GameState::kPractice) {
@@ -164,7 +173,6 @@ void MyApp::DrawTravel() {
   cinder::gl::draw(background_image_left, coord2);
   cinder::gl::draw(background_image_right, coord3);
   
-  
   cinder::gl::draw(car_image, locp);
 }
 
@@ -179,7 +187,7 @@ void MyApp::DrawMenu() {
   const Color color = Color::white();
   
   size_t row = 0;
-  PrintText("Menu:", color, size, {center.x, (center.y - 200)});
+  PrintText("You may:", color, size, {center.x, (center.y - 200)});
   for (const string& option : menu_options) {
     std::stringstream ss;
     ss << std::to_string(++row) << ". " << option;
@@ -265,37 +273,44 @@ void MyApp::keyDown(KeyEvent event) {
     return;
   }
   
-  // allows user to access menu and its options, or exit practice game
-  switch (event.getCode()) {
-    case KeyEvent::KEY_SPACE: {
+  // allows user to select different menu options
+  if (state_ == GameState::kMenu) {
+    switch (event.getCode()) {
       
-      if (state_ == GameState::kEndPractice) {
+      case KeyEvent::KEY_1: {
         state_ = GameState::kTraveling;
-        
-      } else if (state_ != GameState::kMenu) {
-        state_ = GameState::kMenu;
-        
-      } else {
-        state_ = GameState::kTraveling;
+        break;
       }
-      break;
-    }
-    
-    case KeyEvent::KEY_2: {
-      if (state_ == GameState::kMenu) {
+  
+      case KeyEvent::KEY_2: {
         hours_practiced_ = 0;
         user_input[0] = 0;
         check_answer = false;
         state_ = GameState::kPractice;
         practice_game_start_ = system_clock::now();
         practice_game_.StartNewRound();
+        break;
+      }
+  
+      case KeyEvent::KEY_3: {
+        state_ = GameState::kInventory;
+        break;
       }
     }
-    
-    case KeyEvent::KEY_3: {
-      if (state_ == GameState::kMenu) {
-        state_ = GameState::kInventory;
+    return;
+  }
+  
+  // allows user to access menu or exit practice
+  switch (event.getCode()) {
+    case KeyEvent::KEY_SPACE: {
+      
+      if (state_ == GameState::kEndPractice) {
+        state_ = GameState::kMenu;
+        
+      } else if (state_ != GameState::kMenu) {
+        state_ = GameState::kMenu;
       }
+      break;
     }
   }
 }
