@@ -14,5 +14,5 @@
 - **4/28/2020** Finished logic for accepting user input in mini game and
  checking the answer
 - **4/30/2020** Moved StartNewRound() and CheckAnswer() to PracticeGame class
-    - [ ] Add timer so each Practice Game is 1 minute long
+    - [x] Add timer so each Practice Game is 1 minute long
     - [ ] Figure out how to print "Correct"/"Incorrect" message for longer

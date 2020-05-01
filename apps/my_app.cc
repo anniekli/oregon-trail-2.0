@@ -12,7 +12,8 @@
 #include <cinder/gl/gl.h>
 #include "cinder/audio/Voice.h"
 #include <gflags/gflags.h>
-#include <boost/algorithm/string.hpp>
+#include <nlohmann/json.hpp>
+
 
 #include <chrono>
 #include <cmath>
@@ -31,6 +32,7 @@ using cinder::app::KeyEvent;
 using std::chrono::duration_cast;
 using std::chrono::seconds;
 using std::chrono::system_clock;
+using json = nlohmann::json;
 using namespace choreograph;
 
 #if defined(CINDER_COCOA_TOUCH)
