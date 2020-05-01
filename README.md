@@ -53,7 +53,9 @@ for the user).
 ### Week 3
 For week 3, I will focus on the details of the animation and making it smoother.
 . I'll also add the background music and any other sound
-effects that might play at various checkpoints. 
+effects that might play at various checkpoints. I will also add the player's
+ stats at the bottom of the screen while they are traveling, and create the
+  "start game" page.
 
 ### Extension
 If I finish the project early, I could add in more variations of the "mini games", or make the animation

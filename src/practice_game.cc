@@ -11,10 +11,6 @@
 
 namespace myapp {
 
-using std::chrono::duration_cast;
-using std::chrono::seconds;
-using std::chrono::system_clock;
-
 std::pair<std::string, std::string> PracticeGame::GetRandomPiece() {
   int rand_index = rand() % music_files.size();
   return std::make_pair(music_files[rand_index], music_answers[rand_index]);
@@ -26,6 +22,10 @@ void PracticeGame::StartNewRound() {
           (cinder::app::loadAsset(music_pair.first));
   music_piece = cinder::audio::Voice::create(src);
   music_piece->start();
+}
+
+void PracticeGame::EndRound() {
+  music_piece->stop();
 }
 
 bool PracticeGame::CheckAnswer(std::string user_input) {

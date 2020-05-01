@@ -28,6 +28,9 @@ using cinder::ColorA;
 using cinder::Rectf;
 using cinder::TextBox;
 using cinder::app::KeyEvent;
+using std::chrono::duration_cast;
+using std::chrono::seconds;
+using std::chrono::system_clock;
 using namespace choreograph;
 
 #if defined(CINDER_COCOA_TOUCH)
@@ -82,6 +85,13 @@ void MyApp::update() {
   }
   
   if (state_ == GameState::kPractice) {
+    if (duration_cast<std::chrono::seconds>
+                (system_clock::now() - practice_game_start_).count() >=
+                kpractice_time_) {
+      state_ = GameState::kEndPractice;
+      practice_game_.EndRound();
+      player_.AddToInventory("Hours Practiced", hours_practiced_);
+    }
   }
 }
 
@@ -99,6 +109,10 @@ void MyApp::draw() {
   
   if (state_ == GameState::kPractice) {
     DrawPractice();
+  }
+  
+  if (state_ == GameState::kEndPractice) {
+    DrawEndPractice();
   }
   
   if (state_ == GameState::kInventory) {
@@ -193,6 +207,17 @@ void MyApp::DrawPractice() {
   }
 }
 
+void MyApp::DrawEndPractice() const {
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 50};
+  const Color color = Color::white();
+  
+  std::stringstream end_message;
+  end_message << "You practiced " << hours_practiced_ << " hours.";
+  PrintText(end_message.str(), color, size, {center.x, (center.y - 200)});
+  PrintText("Press SPACE BAR to continue", color, size, {center.x, (center.y -
+  150)});
+}
 
 void MyApp::DrawInventory() {
   const cinder::vec2 center = getWindowCenter();
@@ -238,24 +263,33 @@ void MyApp::keyDown(KeyEvent event) {
     return;
   }
   
-  // allows user to access menu and its options
+  // allows user to access menu and its options, or exit practice game
   switch (event.getCode()) {
     case KeyEvent::KEY_SPACE: {
-      if (state_ != GameState::kMenu) {
+      
+      if (state_ == GameState::kEndPractice) {
+        state_ = GameState::kTraveling;
+        
+      } else if (state_ != GameState::kMenu) {
         state_ = GameState::kMenu;
+        
       } else {
         state_ = GameState::kTraveling;
       }
       break;
     }
+    
     case KeyEvent::KEY_2: {
       if (state_ == GameState::kMenu) {
+        hours_practiced_ = 0;
         user_input[0] = 0;
         check_answer = false;
         state_ = GameState::kPractice;
+        practice_game_start_ = system_clock::now();
         practice_game_.StartNewRound();
       }
     }
+    
     case KeyEvent::KEY_3: {
       if (state_ == GameState::kMenu) {
         state_ = GameState::kInventory;
