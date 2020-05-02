@@ -8,22 +8,17 @@
 namespace myapp {
   Layout::Layout(std::string &checkpoint_file) {
     infile.open(cinder::app::getAssetPath(checkpoint_file), std::ios::in);
-    std::cout << cinder::app::getAssetPath(checkpoint_file) << std::endl;
-    char c = infile.get();
-    std::cout << infile.is_open() << std::endl;
 
     if (infile.good()) {
       infile >> j;
-      std::cout << j << std::endl;
       index = 0;
-      std::cout << j.value("start", "default") << std::endl;
-//      std::cout << j.value("startCheckpoint", "hello") << std::endl;
-//      startCheckpoint = j["startCheckpoint"].get<std::string>();
-//      std::cout << startCheckpoint << std::endl;
-//      endCheckpoint = j["startCheckpoint"].get<std::string>();
-//      current_checkpoint = Checkpoint(j["checkpoints"][index]["name"],
-//                                        j["checkpoints"][index]["description"],
-//                                      j["checkpoints"][index]["image"], j["checkpoints"][index]["distance"]);
+      startCheckpoint = j["startCheckpoint"].get<std::string>();
+      std::cout << startCheckpoint << std::endl;
+      endCheckpoint = j["endCheckpoint"].get<std::string>();
+      current_checkpoint = Checkpoint(j["checkpoints"][index]["name"],
+              j["checkpoints"][index]["description"],
+              j["checkpoints"][index]["image"],
+              j["checkpoints"][index]["distance"]);
     }
   }
   
@@ -41,8 +36,10 @@ namespace myapp {
   
   Checkpoint Layout::GetNextCheckpoint() {
     int next_index = index + 1;
-    return Checkpoint(j["checkpoints"][next_index]["name"], j["checkpoints"][next_index]["description"],
-            j["checkpoints"][next_index]["image"], j["checkpoints"][next_index]["distance"]);
+    return Checkpoint(j["checkpoints"][next_index]["name"],
+            j["checkpoints"][next_index]["description"],
+            j["checkpoints"][next_index]["image"],
+            j["checkpoints"][next_index]["distance"]);
   }
   
   void Layout::UpdateNextCheckpoint() {

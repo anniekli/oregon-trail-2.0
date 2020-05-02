@@ -18,8 +18,7 @@ namespace myapp {
   
   DEFINE_uint32(speed, 50, "the speed (delay) of the game");
   DEFINE_string(name, "Annie", "the name of the player");
-  DEFINE_string(file, "test.json", "the filepath of the "
-                                                     "json file containing "
+  DEFINE_string(file, "checkpoints.json", "the filepath of the json file containing "
                                                      "checkpoints");
   
   

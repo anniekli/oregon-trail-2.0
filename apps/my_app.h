@@ -29,7 +29,9 @@ namespace myapp {
 
 enum class GameState {
   kStart,
+  kInstructions,
   kTraveling,
+  kCheckpoint,
   kPractice,
   kEndPractice,
   kMenu,
@@ -50,7 +52,7 @@ private:
   GameState state_;
   Player player_;
   PracticeGame practice_game_;
-//  Layout layout_;
+  Layout layout_;
   
   const vector<string> menu_options = {
           "Continue traveling",
@@ -85,6 +87,8 @@ private:
   void DrawTravel();
   void DrawCheckpoint();
   void IncrementDay();
+  
+  void DrawStart();
 };
 
 }  // namespace myapp

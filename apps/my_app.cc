@@ -53,13 +53,13 @@ const char kDifferentFont[] = "Purisa";
   
   DECLARE_uint32(speed);
   DECLARE_string(name);
-//  DECLARE_string(file);
+  DECLARE_string(file);
   
   
   MyApp::MyApp()
   : state_{GameState::kStart},
-  player_name_{FLAGS_name}
-//  layout_{FLAGS_file}
+  player_name_{FLAGS_name},
+  layout_{FLAGS_file}
 
   {}
 
@@ -75,6 +75,8 @@ void MyApp::setup() {
   check_answer = false;
   user_input[0] = 0;
   mOffset = 0.0f;
+  
+  std::cout << layout_.GetCurrentCheckpoint().GetName() << std::endl;
 
 }
 
@@ -85,14 +87,6 @@ void MyApp::update() {
     }
     timeline.apply( &mOffset ).rampTo((float) 2 * getWindowWidth(), 10.0);
     timeline.step( 1.0 / 60.0 );
-    
-    //Url url( "http://validurl.com/image.jpg" );
-    //myImage = gl::Texture( loadImage( loadUrl( url ) ) );
-    //
-    //Keep in mind that you should not try to draw the texture until after something has been loaded into it. We should check to make sure myImage is a valid gl::Texture before attempting to use it. We can do this with a simple if statement:
-    //
-    //if( myImage )
-    //gl::draw( myImage, getWindowBounds() );
   }
   
   if (state_ == GameState::kPractice) {
@@ -110,11 +104,25 @@ void MyApp::draw() {
   cinder::gl::clear();
   DrawBackground();
   
+  if (state_ == GameState::kStart) {
+    DrawStart();
+  }
+  
+  if (state_ == GameState::kCheckpoint) {
+  
+  }
+  
   if (state_ == GameState::kTraveling) {
     DrawTravel();
   }
   
   if (state_ == GameState::kMenu) {
+//    cinder::Url url( "https://krannertcenter.com/sites/krannertcenter.com/files/field/image/stories-1819givingweekend.jpg" );
+//    cinder::gl::Texture2dRef myImage = cinder::gl::Texture2d::create( loadImage(
+//            loadUrl( url ) ) );
+//
+//    if( myImage )
+//    cinder::gl::draw( myImage, getWindowBounds() );
     DrawMenu();
   }
   
@@ -150,6 +158,16 @@ void PrintText(const string& text, const C& color, const cinder::ivec2& size,
   const auto surface = box.render();
   const auto texture = cinder::gl::Texture::create(surface);
   cinder::gl::draw(texture, locp);
+}
+
+void MyApp::DrawStart() {
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 50};
+  const Color color = Color::white();
+  
+  PrintText("Welcome to the game! Press ENTER to begin.", color, size, {center
+  .x, (center.y - 200)});
+
 }
 
 void MyApp::DrawTravel() {
@@ -308,11 +326,19 @@ void MyApp::keyDown(KeyEvent event) {
       if (state_ == GameState::kEndPractice) {
         state_ = GameState::kMenu;
         
-      } else if (state_ != GameState::kMenu) {
+      } else if (state_ != GameState::kMenu && state_ != GameState::kStart) {
         state_ = GameState::kMenu;
       }
       break;
     }
+    
+    case KeyEvent::KEY_RETURN: {
+      if (state_ == GameState::kStart) {
+        state_ = GameState::kInstructions;
+      }
+    }
   }
 }
+
+
 }  // namespace myapp
