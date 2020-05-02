@@ -53,14 +53,14 @@ const char kDifferentFont[] = "Purisa";
   
   DECLARE_uint32(speed);
   DECLARE_string(name);
-  DECLARE_string(file);
+//  DECLARE_string(file);
   
   
   MyApp::MyApp()
   : state_{GameState::kStart},
-  player_name_{FLAGS_name},
-  checkpoint_file_{FLAGS_file}
-  
+  player_name_{FLAGS_name}
+//  layout_{FLAGS_file}
+
   {}
 
 void MyApp::setup() {
@@ -187,6 +187,7 @@ void MyApp::DrawMenu() {
   const Color color = Color::white();
   
   size_t row = 0;
+  
   PrintText("You may:", color, size, {center.x, (center.y - 200)});
   for (const string& option : menu_options) {
     std::stringstream ss;

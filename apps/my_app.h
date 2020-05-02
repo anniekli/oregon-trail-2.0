@@ -12,6 +12,7 @@
 #include "leaderboard.h"
 #include "cinder/Timeline.h"
 #include "cinder/Tween.h"
+#include "layout.h"
 
 #include <random>
 #include <string>
@@ -49,7 +50,7 @@ private:
   GameState state_;
   Player player_;
   PracticeGame practice_game_;
-  std::string checkpoint_file_;
+//  Layout layout_;
   
   const vector<string> menu_options = {
           "Continue traveling",
@@ -73,7 +74,7 @@ private:
   choreograph::Output<float> mOffset;
   bool check_answer;
   std::chrono::time_point<std::chrono::system_clock> practice_game_start_;
-  const size_t kpractice_time_ = 60;
+  const size_t kpractice_time_ = 20;
   int hours_practiced_;
   
   

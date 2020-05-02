@@ -16,7 +16,9 @@ using json = nlohmann::json;
 
 class Layout {
 public:
+  Layout(){};
   Layout(std::string &checkpoint_file);
+  ~Layout();
   std::string GetStartCheckpoint();
   std::string GetEndCheckpoint();
   void UpdateNextCheckpoint();

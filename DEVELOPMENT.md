@@ -17,3 +17,6 @@
  and created JSON file to represent checkpoints
     - [x] Add timer so each Practice Game is 1 minute long
     - [ ] Figure out how to print "Correct"/"Incorrect" message for longer
+- **5/1/2020** Added Layout class and Checkpoint class so you can access the
+ properties of each checkpoint(name, description, image, and distance)
+    -[ ] Figure out how to access JSON file correctly

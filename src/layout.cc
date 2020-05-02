@@ -2,17 +2,29 @@
 // Created by GWC-CHC-07 on 5/1/2020.
 //
 
+#include <cinder/app/AppBase.h>
 #include "layout.h"
+
 namespace myapp {
   Layout::Layout(std::string &checkpoint_file) {
-    infile.open(checkpoint_file);
-    infile >> j;
-  
-    index = 0;
-    startCheckpoint = j["startCheckpoint"].get<std::string>();
-    endCheckpoint = j["startCheckpoint"].get<std::string>();
-    current_checkpoint = Checkpoint(j[index]["name"], j[index]["description"],
-            j[index]["image"], j[index]["distance"]);
+    infile.open(cinder::app::getAssetPath(checkpoint_file), std::ios::in);
+    std::cout << cinder::app::getAssetPath(checkpoint_file) << std::endl;
+    char c = infile.get();
+    std::cout << infile.is_open() << std::endl;
+
+    if (infile.good()) {
+      infile >> j;
+      std::cout << j << std::endl;
+      index = 0;
+      std::cout << j.value("start", "default") << std::endl;
+//      std::cout << j.value("startCheckpoint", "hello") << std::endl;
+//      startCheckpoint = j["startCheckpoint"].get<std::string>();
+//      std::cout << startCheckpoint << std::endl;
+//      endCheckpoint = j["startCheckpoint"].get<std::string>();
+//      current_checkpoint = Checkpoint(j["checkpoints"][index]["name"],
+//                                        j["checkpoints"][index]["description"],
+//                                      j["checkpoints"][index]["image"], j["checkpoints"][index]["distance"]);
+    }
   }
   
   std::string Layout::GetStartCheckpoint() {
@@ -29,12 +41,18 @@ namespace myapp {
   
   Checkpoint Layout::GetNextCheckpoint() {
     int next_index = index + 1;
-    return Checkpoint(j[next_index]["name"], j[next_index]["description"],
-            j[next_index]["image"], j[next_index]["distance"]);
+    return Checkpoint(j["checkpoints"][next_index]["name"], j["checkpoints"][next_index]["description"],
+            j["checkpoints"][next_index]["image"], j["checkpoints"][next_index]["distance"]);
   }
   
   void Layout::UpdateNextCheckpoint() {
     current_checkpoint = GetNextCheckpoint();
     index += 1;
+  }
+  
+  Layout::~Layout() {
+    if (infile && infile.is_open()) {
+      infile.close();
+    }
   }
 }

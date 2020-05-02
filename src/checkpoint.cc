@@ -4,12 +4,14 @@
 
 #include "checkpoint.h"
 
+#include <utility>
+
 namespace myapp {
   Checkpoint::Checkpoint(std::string name, std::string description,
                          std::string image, int distance) {
-    this->name = name;
-    this->description = description;
-    this->image = image;
+    this->name = std::move(name);
+    this->description = std::move(description);
+    this->image = std::move(image);
     this->distance = distance;
   }
   
