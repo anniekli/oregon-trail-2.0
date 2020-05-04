@@ -19,4 +19,12 @@
     - [ ] Figure out how to print "Correct"/"Incorrect" message for longer
 - **5/1/2020** Added Layout class and Checkpoint class so you can access the
  properties of each checkpoint(name, description, image, and distance)
-    -[ ] Figure out how to access JSON file correctly
+    -[x] Figure out how to access JSON file correctly
+
+## Week 3 ##
+- **5/2/2020** Added tests for Layout class
+- **5/3/2020** Added functionality for the store and gigs!
+    - Allow user to select "Go to store" at start or when at a checkpoint
+    - Allow user to purchase items from store
+    - Also allow user to select "play a gig" when not at a checkpoint instead
+     of "go to store" in order to have a random chance of earning money.

@@ -75,7 +75,7 @@ private:
   
   static const int kinput_length = 31;
   static const int kinput_quantity = 3;
-  char user_input[kinput_length];
+  char user_input[kinput_length]{};
   const std::string player_name_;
   cinder::gl::Texture2dRef car_image;
   cinder::gl::Texture2dRef background_image_right;
@@ -88,11 +88,11 @@ private:
   std::chrono::time_point<std::chrono::system_clock> practice_game_start_;
   std::chrono::time_point<std::chrono::system_clock> current_date_;
   
-  bool check_answer;
+  bool check_answer{};
   const size_t kpractice_time_ = 20;
   const int kspeed_ = 250;
-  int hours_practiced_;
-  int distance_;
+  int hours_practiced_{};
+  int distance_{};
   
   
   void DrawBackground();

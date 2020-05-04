@@ -120,7 +120,7 @@ void MyApp::draw() {
     }
   
     case GameState::kStore: {
-      if (store_ == "") {
+      if (store_.empty()) {
         DrawStore();
       } else {
         DrawBuyItem();
@@ -229,11 +229,11 @@ void MyApp::DrawInstructions() {
   for (const std::pair<std::string, double> option: store_options) {
     std::stringstream ss;
     ss << "- " << option.first;
-    PrintText(ss.str(), color, size, {center.x, (center.y + 300) + row++ * 50});
+    PrintText(ss.str(), color, size, {center.x, (center.y + 300) + ++row * 50});
   }
   
   PrintText("Press ENTER to continue to the store", color, size,
-          {center.x,(center.y + 300) + row++ * 50});
+          {center.x,(center.y + 300) + ++row * 50});
 }
 
 void MyApp::DrawTravel() {
@@ -464,7 +464,7 @@ void MyApp::keyDown(KeyEvent event) {
     return;
   }
   
-  if (state_ == GameState::kStore && store_ == "") {
+  if (state_ == GameState::kStore && store_.empty()) {
     switch (event.getCode()) {
       case KeyEvent::KEY_1: {
         store_ = "Food";
@@ -489,7 +489,7 @@ void MyApp::keyDown(KeyEvent event) {
   }
   
   // allows user to buy items from store
-  if (store_ != "") {
+  if (!store_.empty()) {
     switch (event.getCode()) {
       case KeyEvent::KEY_SPACE: {
         store_ = "";
