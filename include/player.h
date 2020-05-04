@@ -18,11 +18,13 @@ private:
   std::map<std::string, int> inventory = {
           {"Money", 0},
           {"Gas", 0},
-          {"Hours Practiced", 0}
+          {"Hours Practiced", 0},
+          {"Food", 0},
+          {"Water", 0}
   };
 
 public:
-  Player(){};
+  Player();
   Player(std::string name, size_t score);
   
   std::string const GetName();

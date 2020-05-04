@@ -58,6 +58,7 @@ const char kDifferentFont[] = "Purisa";
   
   MyApp::MyApp()
   : state_{GameState::kStart},
+  store_{Store::kOptions},
   player_name_{FLAGS_name},
   layout_{FLAGS_file}
 
@@ -75,6 +76,7 @@ void MyApp::setup() {
   check_answer = false;
   user_input[0] = 0;
   mOffset = 0.0f;
+  distance_ = layout_.GetCurrentCheckpoint().GetDistance();
   
   std::cout << layout_.GetCurrentCheckpoint().GetName() << std::endl;
 
@@ -87,6 +89,8 @@ void MyApp::update() {
     }
     timeline.apply( &mOffset ).rampTo((float) 2 * getWindowWidth(), 10.0);
     timeline.step( 1.0 / 60.0 );
+    
+  
   }
   
   if (state_ == GameState::kPractice) {
@@ -106,35 +110,32 @@ void MyApp::draw() {
   
   if (state_ == GameState::kStart) {
     DrawStart();
-  }
   
-  if (state_ == GameState::kCheckpoint) {
-  
-  }
-  
-  if (state_ == GameState::kTraveling) {
+  } else if (state_ == GameState::kInstructions) {
+    DrawInstructions();
+    
+  } else if (state_ == GameState::kStore) {
+    DrawStore();
+    if (store_ != Store::kOptions) {
+      DrawBuyItem();
+    }
+    
+  } else if (state_ == GameState::kCheckpoint) {
+    DrawCheckpoint();
+    
+  } else if (state_ == GameState::kTraveling) {
     DrawTravel();
-  }
-  
-  if (state_ == GameState::kMenu) {
-//    cinder::Url url( "https://krannertcenter.com/sites/krannertcenter.com/files/field/image/stories-1819givingweekend.jpg" );
-//    cinder::gl::Texture2dRef myImage = cinder::gl::Texture2d::create( loadImage(
-//            loadUrl( url ) ) );
-//
-//    if( myImage )
-//    cinder::gl::draw( myImage, getWindowBounds() );
+    
+  } else if (state_ == GameState::kMenu) {
     DrawMenu();
-  }
   
-  if (state_ == GameState::kPractice) {
+  } else if (state_ == GameState::kPractice) {
     DrawPractice();
-  }
   
-  if (state_ == GameState::kEndPractice) {
+  } else if (state_ == GameState::kEndPractice) {
     DrawEndPractice();
-  }
-  
-  if (state_ == GameState::kInventory) {
+    
+  } else if (state_ == GameState::kInventory) {
     DrawInventory();
   }
 
@@ -160,6 +161,16 @@ void PrintText(const string& text, const C& color, const cinder::ivec2& size,
   cinder::gl::draw(texture, locp);
 }
 
+void MyApp::IncrementDay() {
+  if (distance_ + kspeed_ < layout_.GetCurrentCheckpoint().GetDistance()) {
+    distance_ += kspeed_;
+  } else {
+    distance_ = layout_.GetCurrentCheckpoint().GetDistance();
+  }
+  
+  current_date_ += std::chrono::hours(24);
+}
+
 void MyApp::DrawStart() {
   const cinder::vec2 center = getWindowCenter();
   const cinder::ivec2 size = {500, 50};
@@ -168,6 +179,36 @@ void MyApp::DrawStart() {
   PrintText("Welcome to the game! Press ENTER to begin.", color, size, {center
   .x, (center.y - 200)});
 
+}
+
+void MyApp::DrawInstructions() {
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 500};
+  const Color color = Color::white();
+  
+  
+  PrintText("You are about to embark on a journey of a lifetime. You have "
+            "just graduated from UIUC's music school, and having been "
+            "planning this trip for years. You will be performing in the most"
+            " famous music venues across the globe.", color, size, {center.x,
+             center.y - 100});
+  
+  PrintText("Before you begin, you need to stop at a few stores. You already "
+            "have your instrument and music. Instead of staying in hotels, "
+            "you will travel and live in an RV to save money -- lucky for "
+            "you, you managed to get one from a friend! You already own "
+            "most supplies you need. Now, you need to buy:", color, size,
+            {center.x, center.y + 100});
+  
+  size_t row = 0;
+  for (const std::pair<std::string, int> option: store_options) {
+    std::stringstream ss;
+    ss << "- " << option.first;
+    PrintText(ss.str(), color, size, {center.x, (center.y + 300) + row++ * 50});
+  }
+  
+  PrintText("Press ENTER to continue to the store", color, size,
+          {center.x,(center.y + 300) + row++ * 50});
 }
 
 void MyApp::DrawTravel() {
@@ -192,6 +233,16 @@ void MyApp::DrawTravel() {
   cinder::gl::draw(background_image_right, coord3);
   
   cinder::gl::draw(car_image, locp);
+  
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 50};
+  const Color color = Color::white();
+  
+  auto in_time_t = std::chrono::system_clock::to_time_t(current_date_);
+  
+  std::stringstream ss;
+  ss << "Date: " << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
+  PrintText(ss.str(), color, size, {center.x - 500, center.y});
 }
 
 void MyApp::DrawBackground() {
@@ -207,11 +258,61 @@ void MyApp::DrawMenu() {
   size_t row = 0;
   
   PrintText("You may:", color, size, {center.x, (center.y - 200)});
+  
   for (const string& option : menu_options) {
     std::stringstream ss;
-    ss << std::to_string(++row) << ". " << option;
-    PrintText(ss.str(), color, size, {center.x, (center.y - 200) + row * 50});
+    if ((distance_ != layout_.GetCurrentCheckpoint().GetDistance()
+      && option != "Go to store")
+      || distance_ == layout_.GetCurrentCheckpoint().GetDistance()) {
+      
+      // if not at a checkpoint, don't print out the option to go to the store
+      // if at a checkpoint, print out the option to go to the store
+      ss << std::to_string(++row) << ". " << option;
+      PrintText(ss.str(), color, size, {center.x, (center.y - 200) + row * 50});
+    }
   }
+}
+
+void MyApp::DrawStore() {
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 50};
+  const Color color = Color::white();
+  
+  
+  size_t row = 0;
+  PrintText("Store:", color, size, {center.x, (center.y - 200)});
+  for (std::pair<std::string, int> option : store_options) {
+    std::stringstream items;
+    std::stringstream price;
+    items << option.first;
+    price << "$" << option.second;
+    PrintText(items.str(), color, size, {center.x, (center.y - 200) +
+                                                   ++row * 50});
+    PrintText(price.str(), color, size, {center.x + 300, (center.y -
+                                                               200) + row * 50});
+  }
+  
+  PrintText("Press SPACE BAR to return to menu", color, size,
+            {center.x, (center.y - 200) + ++row * 50});
+}
+
+void MyApp::DrawCheckpoint() {
+  Checkpoint checkpoint = layout_.GetCurrentCheckpoint();
+  
+  cinder::Url url(checkpoint.GetImage());
+  cinder::gl::Texture2dRef image = cinder::gl::Texture2d::create(loadImage(
+          loadUrl(url)));
+
+  if (image) {
+    cinder::gl::draw(image, getWindowBounds());
+  }
+  
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 50};
+  const Color color = Color::black();
+  
+  PrintText(checkpoint.GetName(), color, size, {center.x, center.y + 100});
+  PrintText(checkpoint.GetDescription(), color, size, center);
 }
 
 void MyApp::DrawPractice() {
@@ -223,7 +324,7 @@ void MyApp::DrawPractice() {
   PrintText(user_input, color, size, {center.x, (center.y - 150)});
   
   if (check_answer) {
-    if (practice_game_.CheckAnswer(user_input)) {
+    if (practice_game_.CheckAnswer(reinterpret_cast<string &>(user_input))) {
       PrintText("Correct!", color, size, {center.x, (center.y - 100)});
       hours_practiced_ += 5;
       practice_game_.StartNewRound();
@@ -265,6 +366,9 @@ void MyApp::DrawInventory() {
     PrintText(quantities.str(), color, size, {center.x + 300, (center.y -
     200) + row * 50});
   }
+  
+  PrintText("Press SPACE BAR to return to menu", color, size,
+          {center.x, (center.y - 200) + ++row * 50});
 }
 
 
@@ -292,12 +396,73 @@ void MyApp::keyDown(KeyEvent event) {
     return;
   }
   
+  if (state_ == GameState::kStore && store_ == Store::kOptions) {
+    switch (event.getCode()) {
+      case KeyEvent::KEY_1: {
+        store_ == Store::kFood;
+        break;
+      }
+  
+      case KeyEvent::KEY_2: {
+        store_ == Store::kGas;
+        break;
+      }
+  
+      case KeyEvent::KEY_3: {
+        store_ == Store::kWater;
+        break;
+      }
+    }
+    return;
+  }
+  
+  // allows user to buy items from store
+  if (store_ != Store::kOptions) {
+    switch (event.getCode()) {
+      case KeyEvent::KEY_SPACE: {
+        store_ = Store::kOptions;
+        break;
+      }
+      
+      case KeyEvent::KEY_RETURN: {
+        BuyItem(reinterpret_cast<string &>(user_input));
+      }
+  
+      case KeyEvent::KEY_BACKSPACE: {
+        user_input[strlen(user_input) - 1] = 0;
+        break;
+      }
+  
+      default:
+        if (event.getChar() >= '0' && event.getChar() <= '9'
+            && strlen(user_input) < kinput_length) {
+          user_input[strlen(user_input) + 1] = 0;
+          user_input[strlen(user_input)] = event.getChar();
+          break;
+        }
+      }
+    }
+  }
+  
+  void MyApp::DrawBuyItem() {
+  
+  }
+  
   // allows user to select different menu options
   if (state_ == GameState::kMenu) {
     switch (event.getCode()) {
       
       case KeyEvent::KEY_1: {
         state_ = GameState::kTraveling;
+        checkpoint_timer.resume();
+        
+        // if you are at a checkpoint and are now leaving, update next
+        // checkpoint
+        if (distance_ == layout_.GetCurrentCheckpoint().GetDistance()) {
+          layout_.UpdateNextCheckpoint();
+          distance_ = 0;
+        }
+        
         break;
       }
   
@@ -315,6 +480,16 @@ void MyApp::keyDown(KeyEvent event) {
         state_ = GameState::kInventory;
         break;
       }
+      
+      case KeyEvent::KEY_4: {
+        if (distance_ == layout_.GetCurrentCheckpoint().GetDistance()) {
+            state_ = GameState::kStore;
+            user_input[0] = 0;
+            
+          } else {
+            // quit
+          }
+      }
     }
     return;
   }
@@ -328,6 +503,7 @@ void MyApp::keyDown(KeyEvent event) {
         
       } else if (state_ != GameState::kMenu && state_ != GameState::kStart) {
         state_ = GameState::kMenu;
+        checkpoint_timer.stop();
       }
       break;
     }
@@ -335,10 +511,25 @@ void MyApp::keyDown(KeyEvent event) {
     case KeyEvent::KEY_RETURN: {
       if (state_ == GameState::kStart) {
         state_ = GameState::kInstructions;
+      
+      } else if (state_ == GameState::kInstructions) {
+        state_ = GameState::kStore;
+        
+      } else if (state_ == GameState::kStore &&
+        layout_.GetStartCheckpoint() == layout_.GetCurrentCheckpoint().GetName()) {
+        
+        // if you are just starting the game and leaving the first
+        // checkpoint, set the date leaving to now.
+        state_ = GameState::kTraveling;
+        current_date_ = system_clock::now();
       }
     }
   }
 }
-
-
+  
+  void MyApp::BuyItem(std::string &input) {
+  
+  }
+  
+  
 }  // namespace myapp

@@ -31,11 +31,19 @@ enum class GameState {
   kStart,
   kInstructions,
   kTraveling,
+  kStore,
   kCheckpoint,
   kPractice,
   kEndPractice,
   kMenu,
   kInventory
+};
+
+enum class Store {
+  kFood,
+  kWater,
+  kGas,
+  kOptions
 };
 
 class MyApp : public cinder::app::App {
@@ -50,6 +58,7 @@ class MyApp : public cinder::app::App {
 
 private:
   GameState state_;
+  Store store_;
   Player player_;
   PracticeGame practice_game_;
   Layout layout_;
@@ -58,26 +67,35 @@ private:
           "Continue traveling",
           "Practice",
           "Check Inventory",
+          "Go to store",
           "Quit"
   };
   
-  std::ifstream inFile;
-  json checkpoints;
-  std::string current_checkpoint;
-
+  const std::map<std::string, int> store_options = {
+          {"Food", 7.00},
+          {"Gas", 2.50},
+          {"Water", 3.00}
+  };
+  
   static const int kinput_length = 31;
   char user_input[kinput_length];
   const std::string player_name_;
   cinder::gl::Texture2dRef car_image;
   cinder::gl::Texture2dRef background_image_right;
   cinder::gl::Texture2dRef background_image_left;
-  
   choreograph::Timeline timeline;
   choreograph::Output<float> mOffset;
-  bool check_answer;
+  cinder::Timer checkpoint_timer;
+  
+  
   std::chrono::time_point<std::chrono::system_clock> practice_game_start_;
+  std::chrono::time_point<std::chrono::system_clock> current_date_;
+  
+  bool check_answer;
   const size_t kpractice_time_ = 20;
+  const int kspeed_ = 250;
   int hours_practiced_;
+  int distance_;
   
   
   void DrawBackground();
@@ -87,8 +105,11 @@ private:
   void DrawTravel();
   void DrawCheckpoint();
   void IncrementDay();
-  
   void DrawStart();
+  void DrawInstructions();
+  void DrawStore();
+  void BuyItem(std::string &input);
+  void DrawBuyItem();
 };
 
 }  // namespace myapp
