@@ -93,6 +93,8 @@ private:
   const int kspeed_ = 250;
   int hours_practiced_{};
   int distance_{};
+  int prob;
+  int gig_money;
   
   
   void DrawBackground();
@@ -107,7 +109,7 @@ private:
   void DrawStore();
   void BuyItem(int quantity, std::string &item);
   void DrawBuyItem();
-  
+  void PlayGig();
   void DrawGig();
 };
 

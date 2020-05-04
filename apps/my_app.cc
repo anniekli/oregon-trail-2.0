@@ -90,6 +90,13 @@ void MyApp::update() {
     timeline.apply( &mOffset ).rampTo((float) 2 * getWindowWidth(), 10.0);
     timeline.step( 1.0 / 60.0 );
     
+    // increment day every second
+    if (checkpoint_timer.getSeconds() >= 1) {
+      checkpoint_timer.stop();
+      checkpoint_timer.start();
+      IncrementDay();
+    }
+    
   
   }
   
@@ -189,10 +196,14 @@ void PrintText(const string& text, const C& color, const cinder::ivec2& size,
 void MyApp::IncrementDay() {
   if (distance_ + kspeed_ < layout_.GetCurrentCheckpoint().GetDistance()) {
     distance_ += kspeed_;
+    player_.AddToInventory("Gas", - (kspeed_ / 10));
   } else {
+    player_.AddToInventory("Gas",- ((layout_.GetCurrentCheckpoint()
+    .GetDistance() - distance_) / 10));
     distance_ = layout_.GetCurrentCheckpoint().GetDistance();
   }
-  
+  player_.AddToInventory("Food", -1);
+  player_.AddToInventory("Water", -1);
   current_date_ += std::chrono::hours(24);
 }
 
@@ -244,20 +255,20 @@ void MyApp::DrawTravel() {
   cinder::gl::color(Color::white());
   
 
-  Rectf coord = {mOffset, 0, getWindowWidth() + mOffset, (float) getWindowHeight()};
-  Rectf coord2 = {0 - getWindowWidth() + mOffset, 0, mOffset, (float) getWindowHeight()};
-  Rectf coord3 = {0 - (2 * getWindowWidth()) + mOffset, 0, mOffset - getWindowWidth(),
-                  (float) getWindowHeight()};
-
-  
-  const cinder::vec2 locp = {getWindowWidth() - car_image->getWidth(),
-                             getWindowHeight() - car_image->getHeight()};
-  
-  cinder::gl::draw(background_image_right, coord);
-  cinder::gl::draw(background_image_left, coord2);
-  cinder::gl::draw(background_image_right, coord3);
-  
-  cinder::gl::draw(car_image, locp);
+//  Rectf coord = {mOffset, 0, getWindowWidth() + mOffset, (float) getWindowHeight()};
+//  Rectf coord2 = {0 - getWindowWidth() + mOffset, 0, mOffset, (float) getWindowHeight()};
+//  Rectf coord3 = {0 - (2 * getWindowWidth()) + mOffset, 0, mOffset - getWindowWidth(),
+//                  (float) getWindowHeight()};
+//
+//
+//  const cinder::vec2 locp = {getWindowWidth() - car_image->getWidth(),
+//                             getWindowHeight() - car_image->getHeight()};
+//
+//  cinder::gl::draw(background_image_right, coord);
+//  cinder::gl::draw(background_image_left, coord2);
+//  cinder::gl::draw(background_image_right, coord3);
+//
+//  cinder::gl::draw(car_image, locp);
   
   const cinder::vec2 center = getWindowCenter();
   const cinder::ivec2 size = {500, 50};
@@ -268,6 +279,7 @@ void MyApp::DrawTravel() {
   std::stringstream ss;
   ss << "Date: " << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
   PrintText(ss.str(), color, size, {center.x - 500, center.y});
+  std::cout << ss.str() << std::endl;
 }
 
 void MyApp::DrawBackground() {
@@ -350,18 +362,28 @@ void MyApp::DrawGig() {
   const cinder::ivec2 size = {500, 50};
   const Color color = Color::white();
   
-  int prob = rand() % 8;
   if (prob == 0) {
     PrintText("You got the gig!", color, size, center);
-    int money = rand() % 450 + 50;
     std::stringstream ss;
-    ss << "You earned $" << money << " from this gig.";
-    PrintText(ss.str(), color, size, {center.x, (center.y - 100)});
-    player_.AddToInventory("Money", money);
+    ss << "You earned $" << gig_money << " from this gig.";
+    PrintText(ss.str(), color, size, {center.x, (center.y + 100)});
   } else {
     PrintText("Sorry, you didn't get the gig. Better luck next time!", color,
             size, center);
   }
+}
+
+void MyApp::PlayGig() {
+  prob = rand() % 5;
+  gig_money = rand() % 450 + 50;
+  
+  if (prob == 0) {
+    player_.AddToInventory("Money", gig_money);
+  }
+  
+  std::cout << prob << std::endl;
+  std::cout << gig_money << std::endl;
+  
 }
 
 void MyApp::DrawCheckpoint() {
@@ -545,6 +567,7 @@ void MyApp::keyDown(KeyEvent event) {
           user_input[0] = 0;
       
         } else {
+          PlayGig();
           state_ = GameState::kGig;
         }
         break;
