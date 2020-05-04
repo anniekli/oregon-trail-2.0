@@ -28,7 +28,7 @@ void PracticeGame::EndRound() {
   music_piece->stop();
 }
 
-bool PracticeGame::CheckAnswer(std::string &user_input) {
+bool PracticeGame::CheckAnswer(std::string user_input) {
   std::string str = user_input;
   boost::to_lower(str);
   boost::to_lower(music_pair.second);

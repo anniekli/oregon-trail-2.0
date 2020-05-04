@@ -32,6 +32,7 @@ enum class GameState {
   kInstructions,
   kTraveling,
   kStore,
+  kGig,
   kCheckpoint,
   kPractice,
   kEndPractice,
@@ -39,12 +40,6 @@ enum class GameState {
   kInventory
 };
 
-enum class Store {
-  kFood,
-  kWater,
-  kGas,
-  kOptions
-};
 
 class MyApp : public cinder::app::App {
  public:
@@ -58,26 +53,28 @@ class MyApp : public cinder::app::App {
 
 private:
   GameState state_;
-  Store store_;
+  std::string store_;
   Player player_;
   PracticeGame practice_game_;
   Layout layout_;
   
   const vector<string> menu_options = {
           "Continue traveling",
+          "Go to store",
+          "Play a gig",
           "Practice",
           "Check Inventory",
-          "Go to store",
           "Quit"
   };
   
-  const std::map<std::string, int> store_options = {
+  const std::map<std::string, double> store_options = {
           {"Food", 7.00},
           {"Gas", 2.50},
           {"Water", 3.00}
   };
   
   static const int kinput_length = 31;
+  static const int kinput_quantity = 3;
   char user_input[kinput_length];
   const std::string player_name_;
   cinder::gl::Texture2dRef car_image;
@@ -108,8 +105,10 @@ private:
   void DrawStart();
   void DrawInstructions();
   void DrawStore();
-  void BuyItem(std::string &input);
+  void BuyItem(int quantity, std::string &item);
   void DrawBuyItem();
+  
+  void DrawGig();
 };
 
 }  // namespace myapp

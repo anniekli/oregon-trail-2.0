@@ -58,7 +58,6 @@ const char kDifferentFont[] = "Purisa";
   
   MyApp::MyApp()
   : state_{GameState::kStart},
-  store_{Store::kOptions},
   player_name_{FLAGS_name},
   layout_{FLAGS_file}
 
@@ -77,6 +76,7 @@ void MyApp::setup() {
   user_input[0] = 0;
   mOffset = 0.0f;
   distance_ = layout_.GetCurrentCheckpoint().GetDistance();
+  store_ = "";
   
   std::cout << layout_.GetCurrentCheckpoint().GetName() << std::endl;
 
@@ -108,35 +108,60 @@ void MyApp::draw() {
   cinder::gl::clear();
   DrawBackground();
   
-  if (state_ == GameState::kStart) {
-    DrawStart();
-  
-  } else if (state_ == GameState::kInstructions) {
-    DrawInstructions();
-    
-  } else if (state_ == GameState::kStore) {
-    DrawStore();
-    if (store_ != Store::kOptions) {
-      DrawBuyItem();
+  switch (state_) {
+    case GameState::kStart: {
+      DrawStart();
+      break;
     }
     
-  } else if (state_ == GameState::kCheckpoint) {
-    DrawCheckpoint();
-    
-  } else if (state_ == GameState::kTraveling) {
-    DrawTravel();
-    
-  } else if (state_ == GameState::kMenu) {
-    DrawMenu();
+    case GameState::kInstructions: {
+      DrawInstructions();
+      break;
+    }
   
-  } else if (state_ == GameState::kPractice) {
-    DrawPractice();
+    case GameState::kStore: {
+      if (store_ == "") {
+        DrawStore();
+      } else {
+        DrawBuyItem();
+      }
+      break;
+    }
   
-  } else if (state_ == GameState::kEndPractice) {
-    DrawEndPractice();
+    case GameState::kGig: {
+      DrawGig();
+      break;
+    }
     
-  } else if (state_ == GameState::kInventory) {
-    DrawInventory();
+    case GameState::kCheckpoint: {
+      DrawCheckpoint();
+      break;
+    }
+    
+    case GameState::kTraveling: {
+      DrawTravel();
+      break;
+    }
+  
+    case GameState::kMenu: {
+      DrawMenu();
+      break;
+    }
+  
+    case GameState::kPractice: {
+      DrawPractice();
+      break;
+    }
+  
+    case GameState::kEndPractice: {
+      DrawEndPractice();
+      break;
+    }
+  
+    case GameState::kInventory: {
+      DrawInventory();
+      break;
+    }
   }
 
 }
@@ -201,7 +226,7 @@ void MyApp::DrawInstructions() {
             {center.x, center.y + 100});
   
   size_t row = 0;
-  for (const std::pair<std::string, int> option: store_options) {
+  for (const std::pair<std::string, double> option: store_options) {
     std::stringstream ss;
     ss << "- " << option.first;
     PrintText(ss.str(), color, size, {center.x, (center.y + 300) + row++ * 50});
@@ -263,9 +288,10 @@ void MyApp::DrawMenu() {
     std::stringstream ss;
     if ((distance_ != layout_.GetCurrentCheckpoint().GetDistance()
       && option != "Go to store")
-      || distance_ == layout_.GetCurrentCheckpoint().GetDistance()) {
+      || (distance_ == layout_.GetCurrentCheckpoint().GetDistance()
+      && option != "Play a gig")) {
       
-      // if not at a checkpoint, don't print out the option to go to the store
+      // if not at a checkpoint, print out the option to play a gig
       // if at a checkpoint, print out the option to go to the store
       ss << std::to_string(++row) << ". " << option;
       PrintText(ss.str(), color, size, {center.x, (center.y - 200) + row * 50});
@@ -281,19 +307,61 @@ void MyApp::DrawStore() {
   
   size_t row = 0;
   PrintText("Store:", color, size, {center.x, (center.y - 200)});
-  for (std::pair<std::string, int> option : store_options) {
+  for (std::pair<std::string, double> option : store_options) {
     std::stringstream items;
     std::stringstream price;
-    items << option.first;
+    items << std::to_string(++row) << ". " << option.first;
     price << "$" << option.second;
     PrintText(items.str(), color, size, {center.x, (center.y - 200) +
-                                                   ++row * 50});
+                                                   row * 50});
     PrintText(price.str(), color, size, {center.x + 300, (center.y -
                                                                200) + row * 50});
   }
   
+  std::stringstream ss;
+  ss << "Money: " << player_.GetInventory().at("Money");
+  PrintText(ss.str(), color, size, {center.x, (center.y -
+                                                        200) + ++row * 50});
   PrintText("Press SPACE BAR to return to menu", color, size,
             {center.x, (center.y - 200) + ++row * 50});
+}
+
+void MyApp::DrawBuyItem() {
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 50};
+  const Color color = Color::white();
+  
+  std::stringstream ss;
+  ss << "How much " << store_ << " would you like to buy?";
+  PrintText(ss.str(), color, size, {center.x, (center.y - 200)});
+  PrintText(user_input, color, size, {center.x, (center.y - 150)});
+}
+
+void MyApp::BuyItem(int quantity, std::string &item) {
+  int price = store_options.at(item);
+  if (price * quantity <= player_.GetInventory().at("Money")) {
+    player_.AddToInventory("Money", - (price * quantity));
+    player_.AddToInventory(item, quantity);
+  }
+}
+
+void MyApp::DrawGig() {
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 50};
+  const Color color = Color::white();
+  
+  int prob = rand() % 8;
+  if (prob == 0) {
+    PrintText("You got the gig!", color, size, center);
+    int money = rand() % 450 + 50;
+    std::stringstream ss;
+    ss << "You earned $" << money << " from this gig.";
+    PrintText(ss.str(), color, size, {center.x, (center.y - 100)});
+    player_.AddToInventory("Money", money);
+  } else {
+    PrintText("Sorry, you didn't get the gig. Better luck next time!", color,
+            size, center);
+  }
 }
 
 void MyApp::DrawCheckpoint() {
@@ -324,7 +392,7 @@ void MyApp::DrawPractice() {
   PrintText(user_input, color, size, {center.x, (center.y - 150)});
   
   if (check_answer) {
-    if (practice_game_.CheckAnswer(reinterpret_cast<string &>(user_input))) {
+    if (practice_game_.CheckAnswer(user_input)) {
       PrintText("Correct!", color, size, {center.x, (center.y - 100)});
       hours_practiced_ += 5;
       practice_game_.StartNewRound();
@@ -396,36 +464,45 @@ void MyApp::keyDown(KeyEvent event) {
     return;
   }
   
-  if (state_ == GameState::kStore && store_ == Store::kOptions) {
+  if (state_ == GameState::kStore && store_ == "") {
     switch (event.getCode()) {
       case KeyEvent::KEY_1: {
-        store_ == Store::kFood;
+        store_ = "Food";
         break;
       }
   
       case KeyEvent::KEY_2: {
-        store_ == Store::kGas;
+        store_ = "Gas";
         break;
       }
   
       case KeyEvent::KEY_3: {
-        store_ == Store::kWater;
+        store_ = "Water";
         break;
+      }
+      
+      case KeyEvent::KEY_SPACE: {
+        state_ = GameState::kMenu;
       }
     }
     return;
   }
   
   // allows user to buy items from store
-  if (store_ != Store::kOptions) {
+  if (store_ != "") {
     switch (event.getCode()) {
       case KeyEvent::KEY_SPACE: {
-        store_ = Store::kOptions;
+        store_ = "";
         break;
       }
       
       case KeyEvent::KEY_RETURN: {
-        BuyItem(reinterpret_cast<string &>(user_input));
+        if (strlen(user_input) > 0) {
+          BuyItem(atoi(user_input), store_);
+          user_input[0] = 0;
+          store_ = "";
+        }
+        break;
       }
   
       case KeyEvent::KEY_BACKSPACE: {
@@ -435,17 +512,13 @@ void MyApp::keyDown(KeyEvent event) {
   
       default:
         if (event.getChar() >= '0' && event.getChar() <= '9'
-            && strlen(user_input) < kinput_length) {
+            && strlen(user_input) < kinput_quantity) {
           user_input[strlen(user_input) + 1] = 0;
           user_input[strlen(user_input)] = event.getChar();
           break;
         }
-      }
     }
-  }
-  
-  void MyApp::DrawBuyItem() {
-  
+    return;
   }
   
   // allows user to select different menu options
@@ -467,6 +540,17 @@ void MyApp::keyDown(KeyEvent event) {
       }
   
       case KeyEvent::KEY_2: {
+        if (distance_ == layout_.GetCurrentCheckpoint().GetDistance()) {
+          state_ = GameState::kStore;
+          user_input[0] = 0;
+      
+        } else {
+          state_ = GameState::kGig;
+        }
+        break;
+      }
+  
+      case KeyEvent::KEY_3: {
         hours_practiced_ = 0;
         user_input[0] = 0;
         check_answer = false;
@@ -476,20 +560,15 @@ void MyApp::keyDown(KeyEvent event) {
         break;
       }
   
-      case KeyEvent::KEY_3: {
+      case KeyEvent::KEY_4: {
         state_ = GameState::kInventory;
         break;
       }
       
-      case KeyEvent::KEY_4: {
-        if (distance_ == layout_.GetCurrentCheckpoint().GetDistance()) {
-            state_ = GameState::kStore;
-            user_input[0] = 0;
-            
-          } else {
-            // quit
-          }
+      case KeyEvent::KEY_5: {
+        //quit
       }
+
     }
     return;
   }
@@ -497,27 +576,29 @@ void MyApp::keyDown(KeyEvent event) {
   // allows user to access menu or exit practice
   switch (event.getCode()) {
     case KeyEvent::KEY_SPACE: {
-      
+    
       if (state_ == GameState::kEndPractice) {
         state_ = GameState::kMenu;
-        
-      } else if (state_ != GameState::kMenu && state_ != GameState::kStart) {
+      
+      } else if (state_ != GameState::kMenu && state_ != GameState::kStart
+        && state_ != GameState::kInstructions) {
         state_ = GameState::kMenu;
         checkpoint_timer.stop();
       }
       break;
     }
-    
+  
     case KeyEvent::KEY_RETURN: {
       if (state_ == GameState::kStart) {
         state_ = GameState::kInstructions;
       
       } else if (state_ == GameState::kInstructions) {
         state_ = GameState::kStore;
-        
+      
       } else if (state_ == GameState::kStore &&
-        layout_.GetStartCheckpoint() == layout_.GetCurrentCheckpoint().GetName()) {
-        
+                 layout_.GetStartCheckpoint() ==
+                 layout_.GetCurrentCheckpoint().GetName()) {
+      
         // if you are just starting the game and leaving the first
         // checkpoint, set the date leaving to now.
         state_ = GameState::kTraveling;
@@ -526,10 +607,7 @@ void MyApp::keyDown(KeyEvent event) {
     }
   }
 }
-  
-  void MyApp::BuyItem(std::string &input) {
-  
-  }
-  
+
+
   
 }  // namespace myapp
