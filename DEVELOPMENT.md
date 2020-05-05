@@ -25,6 +25,9 @@
 - **5/2/2020** Added tests for Layout class
 - **5/3/2020** Added functionality for the store and gigs!
     - Allow user to select "Go to store" at start or when at a checkpoint
-    - Allow user to purchase items from store
     - Also allow user to select "play a gig" when not at a checkpoint instead
      of "go to store" in order to have a random chance of earning money.
+- **5/4/2020** Allow user to purchase items from store
+    - Their purchase is reflected in the inventory
+- **5/5/2020** Checkpoint is drawn automatically when reached.
+    - [ ] Make animation smoother when traveling

@@ -59,7 +59,9 @@ const char kDifferentFont[] = "Purisa";
   MyApp::MyApp()
   : state_{GameState::kStart},
   player_name_{FLAGS_name},
-  layout_{FLAGS_file}
+  layout_{FLAGS_file},
+  prob{0},
+  gig_money{50}
 
   {}
 
@@ -75,11 +77,10 @@ void MyApp::setup() {
   check_answer = false;
   user_input[0] = 0;
   mOffset = 0.0f;
-  distance_ = layout_.GetCurrentCheckpoint().GetDistance();
+  distance_ = 0;
   store_ = "";
-  
-  std::cout << layout_.GetCurrentCheckpoint().GetName() << std::endl;
-
+  current_date_ = system_clock::now();
+  checkpoint_timer.stop();
 }
 
 void MyApp::update() {
@@ -87,8 +88,16 @@ void MyApp::update() {
     if (timeline.empty()) {
       mOffset = 0.0f;
     }
-    timeline.apply( &mOffset ).rampTo((float) 2 * getWindowWidth(), 10.0);
-    timeline.step( 1.0 / 60.0 );
+    
+    if (distance_ + kspeed_ >= layout_.GetCurrentCheckpoint().GetDistance()) {
+      timeline.apply( &mOffset ).rampTo((float) 2 * getWindowWidth(), 1.0);
+      timeline.step( 1.0 / 60.0 );
+    } else {
+      timeline.apply( &mOffset ).rampTo((float) 2 * getWindowWidth(), layout_
+      .GetCurrentCheckpoint().GetDistance() / kspeed_);
+      timeline.step( 1.0 / 60.0 );
+    }
+
     
     // increment day every second
     if (checkpoint_timer.getSeconds() >= 1) {
@@ -97,6 +106,10 @@ void MyApp::update() {
       IncrementDay();
     }
     
+    if (distance_ == layout_.GetCurrentCheckpoint().GetDistance()) {
+      state_ = GameState::kCheckpoint;
+      timeline.clear();
+    }
   
   }
   
@@ -172,18 +185,20 @@ void MyApp::draw() {
   }
 
 }
-  
+
+// PrintText was modified from Snake Game
 template <typename C>
 void PrintText(const string& text, const C& color, const cinder::ivec2& size,
-               const cinder::vec2& loc) {
+               const cinder::vec2& loc, const ColorA color_a = ColorA(0, 0, 0,
+                       0), const cinder::TextBox::Alignment align = TextBox::LEFT) {
   cinder::gl::color(color);
   
   auto box = TextBox()
-          .alignment(TextBox::LEFT)
+          .alignment(align)
           .font(cinder::Font(kNormalFont, 30))
           .size(size)
           .color(color)
-          .backgroundColor(ColorA(0, 0, 0, 0))
+          .backgroundColor(color_a)
           .text(text);
   
   const auto box_size = box.getSize();
@@ -253,33 +268,31 @@ void MyApp::DrawTravel() {
   cinder::gl::disableDepthWrite();
   cinder::gl::enableAlphaBlending();
   cinder::gl::color(Color::white());
-  
 
-//  Rectf coord = {mOffset, 0, getWindowWidth() + mOffset, (float) getWindowHeight()};
-//  Rectf coord2 = {0 - getWindowWidth() + mOffset, 0, mOffset, (float) getWindowHeight()};
-//  Rectf coord3 = {0 - (2 * getWindowWidth()) + mOffset, 0, mOffset - getWindowWidth(),
-//                  (float) getWindowHeight()};
-//
-//
-//  const cinder::vec2 locp = {getWindowWidth() - car_image->getWidth(),
-//                             getWindowHeight() - car_image->getHeight()};
-//
-//  cinder::gl::draw(background_image_right, coord);
-//  cinder::gl::draw(background_image_left, coord2);
-//  cinder::gl::draw(background_image_right, coord3);
-//
-//  cinder::gl::draw(car_image, locp);
+  Rectf coord = {mOffset, 0, getWindowWidth() + mOffset, (float) getWindowHeight()};
+  Rectf coord2 = {0 - getWindowWidth() + mOffset, 0, mOffset, (float) getWindowHeight()};
+  Rectf coord3 = {0 - (2 * getWindowWidth()) + mOffset, 0, mOffset - getWindowWidth(),
+                  (float) getWindowHeight()};
+
+
+  const cinder::vec2 locp = {getWindowWidth() - car_image->getWidth(),
+                             getWindowHeight() - car_image->getHeight()};
+
+  cinder::gl::draw(background_image_right, coord);
+  cinder::gl::draw(background_image_left, coord2);
+  cinder::gl::draw(background_image_right, coord3);
+
+  cinder::gl::draw(car_image, locp);
   
   const cinder::vec2 center = getWindowCenter();
   const cinder::ivec2 size = {500, 50};
-  const Color color = Color::white();
+  const Color color = Color::black();
   
   auto in_time_t = std::chrono::system_clock::to_time_t(current_date_);
   
   std::stringstream ss;
-  ss << "Date: " << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
-  PrintText(ss.str(), color, size, {center.x - 500, center.y});
-  std::cout << ss.str() << std::endl;
+  ss << "Date: " << std::put_time(std::gmtime(&in_time_t), "%A, %B %d, %G");
+  PrintText(ss.str(), color, size, {center.x, center.y - 300});
 }
 
 void MyApp::DrawBackground() {
@@ -334,8 +347,15 @@ void MyApp::DrawStore() {
   ss << "Money: " << player_.GetInventory().at("Money");
   PrintText(ss.str(), color, size, {center.x, (center.y -
                                                         200) + ++row * 50});
-  PrintText("Press SPACE BAR to return to menu", color, size,
-            {center.x, (center.y - 200) + ++row * 50});
+  
+  if (layout_.GetCurrentCheckpoint().GetName() == layout_.GetStartCheckpoint()) {
+    PrintText("Press SPACE BAR to continue", color, size,
+              {center.x, (center.y - 200) + ++row * 50});
+  } else {
+    PrintText("Press SPACE BAR to return to menu", color, size,
+              {center.x, (center.y - 200) + ++row * 50});
+  }
+
 }
 
 void MyApp::DrawBuyItem() {
@@ -387,6 +407,12 @@ void MyApp::PlayGig() {
 }
 
 void MyApp::DrawCheckpoint() {
+  cinder::gl::clear();
+  cinder::gl::disableDepthRead();
+  cinder::gl::disableDepthWrite();
+  cinder::gl::enableAlphaBlending();
+  cinder::gl::color(Color::white());
+  
   Checkpoint checkpoint = layout_.GetCurrentCheckpoint();
   
   cinder::Url url(checkpoint.GetImage());
@@ -398,12 +424,17 @@ void MyApp::DrawCheckpoint() {
   }
   
   const cinder::vec2 center = getWindowCenter();
-  const cinder::ivec2 size = {500, 50};
-  const Color color = Color::black();
+  const cinder::ivec2 size = {getWindowWidth(), 50};
+  const Color color = Color::white();
   
-  PrintText(checkpoint.GetName(), color, size, {center.x, center.y + 100});
-  PrintText(checkpoint.GetDescription(), color, size, center);
-}
+  PrintText(checkpoint.GetName(), color, size, {center.x, center.y + 250},
+          ColorA::black(), TextBox::CENTER);
+  PrintText(checkpoint.GetDescription(), color, {getWindowWidth(), 100}, {center
+  .x, center.y + 320}, ColorA::black(), TextBox::CENTER);
+  PrintText("Press SPACE BAR to continue.", color, size, {center.x, center
+  .y + 380},
+          ColorA::black(), TextBox::CENTER);
+  }
 
 void MyApp::DrawPractice() {
   const cinder::vec2 center = getWindowCenter();
@@ -504,7 +535,16 @@ void MyApp::keyDown(KeyEvent event) {
       }
       
       case KeyEvent::KEY_SPACE: {
-        state_ = GameState::kMenu;
+        if (layout_.GetStartCheckpoint() ==
+            layout_.GetCurrentCheckpoint().GetName()) {
+    
+          // if you are just starting the game and leaving the first
+          // checkpoint, set the date leaving to now.
+          state_ = GameState::kCheckpoint;
+        } else {
+          state_ = GameState::kMenu;
+        }
+        break;
       }
     }
     return;
@@ -514,7 +554,7 @@ void MyApp::keyDown(KeyEvent event) {
   if (!store_.empty()) {
     switch (event.getCode()) {
       case KeyEvent::KEY_SPACE: {
-        store_ = "";
+        store_.clear();
         break;
       }
       
@@ -522,7 +562,7 @@ void MyApp::keyDown(KeyEvent event) {
         if (strlen(user_input) > 0) {
           BuyItem(atoi(user_input), store_);
           user_input[0] = 0;
-          store_ = "";
+          store_.clear();
         }
         break;
       }
@@ -590,6 +630,7 @@ void MyApp::keyDown(KeyEvent event) {
       
       case KeyEvent::KEY_5: {
         //quit
+        break;
       }
 
     }
@@ -604,9 +645,18 @@ void MyApp::keyDown(KeyEvent event) {
         state_ = GameState::kMenu;
       
       } else if (state_ != GameState::kMenu && state_ != GameState::kStart
-        && state_ != GameState::kInstructions) {
+        && state_ != GameState::kInstructions
+        && layout_.GetCurrentCheckpoint().GetName()
+        != layout_.GetEndCheckpoint()) {
+        
         state_ = GameState::kMenu;
         checkpoint_timer.stop();
+        
+      } else if (state_ == GameState::kCheckpoint
+        && layout_.GetCurrentCheckpoint().GetName()
+        == layout_.GetEndCheckpoint()) {
+        
+        state_ = GameState::kGameOver;
       }
       break;
     }
@@ -617,16 +667,8 @@ void MyApp::keyDown(KeyEvent event) {
       
       } else if (state_ == GameState::kInstructions) {
         state_ = GameState::kStore;
-      
-      } else if (state_ == GameState::kStore &&
-                 layout_.GetStartCheckpoint() ==
-                 layout_.GetCurrentCheckpoint().GetName()) {
-      
-        // if you are just starting the game and leaving the first
-        // checkpoint, set the date leaving to now.
-        state_ = GameState::kTraveling;
-        current_date_ = system_clock::now();
       }
+      break;
     }
   }
 }

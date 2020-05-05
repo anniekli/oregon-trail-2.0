@@ -37,7 +37,8 @@ enum class GameState {
   kPractice,
   kEndPractice,
   kMenu,
-  kInventory
+  kInventory,
+  kGameOver
 };
 
 

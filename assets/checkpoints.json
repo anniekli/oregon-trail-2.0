@@ -7,83 +7,84 @@
       "name": "Krannert Center, UIUC",
       "description": "You start at the Krannert Center for the Performing Arts at UIUC. You have been playing your instrument for years, practicing for hours every day. Finally, you are ready to embark on a journey around the world",
       "image": "https://krannertcenter.com/sites/krannertcenter.com/files/field/image/stories-1819givingweekend.jpg",
-      "distance": 133
+      "distance": 0
     },
 
     {
       "name": "Chicago Symphony Orchestra, Chicago",
       "description": "You arrive at the Symphony Center in Chicago, where the Chicago Symphony Orchestra performs. The raucous sounds of the city fade away as you evert the concert hall, and a beautiful symphony fills your ears.",
       "image": "https://chicagoclassicalreview.com/wp-content/uploads/Orchestra-Hall-Chicago.jpg",
-      "distance": 2043
+      "distance": 133
     },
 
     {
       "name":"Walt Disney Concert Hall, Los Angeles",
       "description": "You enter the Walt Disney Concert Hall, home to the LA Philharmonic. From the stainless steel curves of its striking exterior to the state-of-the-art acoustics of the main auditorium, the concert hall embodies the energy and creative spirit of Los Angeles and its orchestra.",
       "image": "https://www.discoverlosangeles.com/sites/default/files/styles/hero/public/Unrecognized/Music%20%26%20Concerts/disney%20hall.jpg?itok=MHnVMXvl",
-      "distance": 7509
+      "distance": 2043
     },
 
     {
       "name":"Sydney Opera House, Australia",
       "description": "The Sydney Opera House is a multi-venue performing arts centre at Sydney Harbour in Sydney, New South Wales, Australia. It is one of the 20th century's most famous and distinctive buildings. The opera house comprises multiple performance venues, which together host well over 1,500 performances annually, attended by more than 1.2 million people. Its resident companies are Opera Australia, the Sydney Theatre Company, and the Sydney Symphony Orchestra.",
       "image": "https://www.sydneyoperahouse.com/content/dam/soh/generic/New_SAILS-4",
-      "distance": 4897
+      "distance": 7509
     },
 
     {
       "name":"Shanghai Oriental Art Center, China",
       "description": "The Shanghai Oriental Art Center is one of the leading performance and cultural facilities in Shanghai. The five interconnected halls, or \"petals\", are shaped to resemble a butterfly orchid from above. They comprise the Entrance Hall, the Concert Hall, the Opera Hall, the Performance Hall, and the Exhibition Hall. The high-tech ceiling changes color during the night to reflect the nature of the performances inside.",
       "image": "https://subsites.chinadaily.com.cn/shanghaipudong/att/20170721/1500632086525014645.jpg",
-      "distance": 4415
+      "distance": 4897
     },
 
     {
       "name": "Mariinsky Theatre, St Petersburg",
       "description": "The Mariinsky Theatre is a historic theatre of opera and ballet in Saint Petersburg, Russia. It is where many of the masterpieces of Tchaikovsky, Mussorgsky, and Rimsky-Korsakov received their premieres. Today, the Mariinsky Theatre is home to the Mariinsky Ballet, Mariinsky Opera and Mariinsky Orchestra.",
       "image": "https://assets.classicfm.com/2012/40/mariinsky-theatre-st-petersburg-1349364437-view-0.jpg",
-      "distance": 1156
+      "distance": 4415
     },
 
     {
       "name": "Vienna State Opera, Germany",
       "description": "The Vienna State Opera is considered one of the most important opera houses in the world. The members of the Vienna Philharmonic are recruited from the Vienna State Opera's orchestra. The building is also the home of the Vienna State Ballet, and it hosts the annual Vienna Opera Ball during the carnival season.",
       "image": "https://assets.classicfm.com/2012/40/vienna-state-opera-1349358957-view-1.jpg",
-      "distance": 523
+      "distance": 1156
     },
 
     {
       "name": "La Scala, Milan",
       "description": "Teatro alla Scala, also known as La Scala, is an opera house in Milan, Italy. The theatre is regarded as one of the leading opera and ballet theatres in the world and is home to the La Scala Theatre Chorus, La Scala Theatre Ballet and La Scala Theatre Orchestra.",
       "image": "https://assets.classicfm.com/2012/40/teatro-alla-scala-1349364436-view-0.jpg",
-      "distance": 533
+      "distance": 523
     },
 
     {
       "name": "Palais Garnier, Paris",
       "description": "The Palais Garnier is a 1,979-seat opera house in Paris, France, and was built for the Paris Opera at the behest of Emperor Napoleon III. The opera house was famously used as the setting for Gaston Leroux's 1910 novel \"The Phantom of the Opera\".",
       "image": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Paris_Opera_full_frontal_architecture%2C_May_2009.jpg",
-      "distance": 283
+      "distance": 533
     },
 
     {
       "name": "Royal Albert Hall, London",
       "description": "The Royal Albert Hall is one of the United Kingdom's most treasured and distinctive buildings. Since the hall's opening by Queen Victoria in 1871, the world's leading artists from many performance genres have appeared on its stage.",
       "image": "https://assets.classicfm.com/2009/10/royal-albert-hall-1236870875-view-0.jpg",
-      "distance": 3270
+      "distance": 283
     },
 
     {
       "name": "Boston Symphony Hall, Massachussetts",
       "description": "Symphony Hall was built in 1900 for the Boston Symphony Orchestra, which continues to make the hall its home. The hall was designated a U.S. National Historic Landmark in 1999 and is a pending Boston Landmark.",
       "image": "https://assets.classicfm.com/2012/40/boston-symphony-hall-1349358957-view-0.jpg",
-      "distance": 212
+      "distance": 3270
     },
 
     {
       "name": "Carnegie Hall, New York",
       "description": "You have arrived at your final destination: Carnegie Hall! It is one of the most prestigious venues in the world for both classical music and popular music. Most of the greatest performers of classical music since the time Carnegie Hall was built have performed in its Main Hall, and its lobbies are adorned with signed portraits and memorabilia. As you explore the city in which Carnegie Hall makes its home in, you fall in love with the bustling crowds and city sights. You decide that instead of returning home, you will move to New York City to live out your days as a famous classical musician.",
-      "image": "https://celebrityaccess.com/wp-content/uploads/2020/04/Carnegie-Hall.jpg"
+      "image": "https://celebrityaccess.com/wp-content/uploads/2020/04/Carnegie-Hall.jpg",
+      "distance": 212
     }
   ]
 }
