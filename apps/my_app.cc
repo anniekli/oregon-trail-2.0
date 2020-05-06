@@ -124,6 +124,9 @@ void MyApp::update() {
     }
     
     if (distance_ == current_distance) {
+      
+      // at each new checkpoint, play a piece from the practice game
+      practice_game_.StartNewRound();
       state_ = GameState::kCheckpoint;
       timeline.clear();
       mOffset = 0.0f;
@@ -476,7 +479,7 @@ void MyApp::DrawGig() {
   const cinder::ivec2 size = {500, 50};
   const Color color = Color::white();
   
-  if (num_gigs > max_gigs) {
+  if (num_gigs >= max_gigs) {
     PrintText("Sorry, you can't play any more gigs today.", color, size,
             center);
     
@@ -493,6 +496,9 @@ void MyApp::DrawGig() {
                 size, center);
     }
   }
+  
+  PrintText("Press SPACE BAR to return to menu.", color,
+            size, {center.x, center.y + 200});
 }
 
 void MyApp::PlayGig() {
@@ -532,6 +538,11 @@ void MyApp::DrawCheckpoint() {
   const cinder::ivec2 size = {getWindowWidth(), 50};
   const Color color = Color::white();
   
+  // print the name of the piece playing
+  PrintText(practice_game_.GetMusicPiece(), color, size,
+          {center.x, center.y - 380}, ColorA::black(), TextBox::CENTER);
+  
+  // print information about the checkpoint
   PrintText(checkpoint.GetName(), color, size, {center.x, center.y + 225},
           ColorA::black(), TextBox::CENTER);
   PrintText(checkpoint.GetDescription(), color, {getWindowWidth(), 100},
@@ -631,20 +642,30 @@ void MyApp::DrawGameOver() {
   const Color color = Color::white();
   
   size_t row = 0;
-  PrintText("High Scores:", color, size, {center.x, (center.y - 200)});
+  PrintText("Your score:", color, size,
+          {center.x, (center.y - 300)});
+  PrintText(std::to_string(player_.GetScore()), color, size,
+            {center.x, (center.y - 300 + (++row) * 50)});
+  
+  ++row;
+  
+  PrintText("High Scores:", color, size,
+          {center.x, (center.y - 300 + (++row) * 50)});
   for (const Player player : top_players_) {
     std::stringstream ss;
     ss << player.GetName() << " - " << player.GetScore();
-    PrintText(ss.str(), color, size, {center.x, (center.y - 200) + (++row) * 50});
+    PrintText(ss.str(), color, size,
+            {center.x, (center.y - 300) + (++row) * 50});
   }
   
   ++row;
-  PrintText("Your High Scores:", color, size, {center.x, (center.y - 200) +
-  (++row) * 50});
+  PrintText("Your High Scores:", color, size,
+          {center.x, (center.y - 300) + (++row) * 50});
   for (const Player player : player_high_scores_) {
     std::stringstream ss;
     ss << player.GetName() << " - " << player.GetScore();
-    PrintText(ss.str(), color, size, {center.x, (center.y - 200) + (++row) * 50});
+    PrintText(ss.str(), color, size,
+            {center.x, (center.y - 300) + (++row) * 50});
   }
 }
 
@@ -698,6 +719,8 @@ void MyApp::keyDown(KeyEvent event) {
     
           // if you are just starting the game, this should send you to the
           // checkpoint
+          // at each checkpoint, play a piece from the practice game
+          practice_game_.StartNewRound();
           state_ = GameState::kCheckpoint;
           
         } else {
@@ -833,7 +856,12 @@ void MyApp::keyDown(KeyEvent event) {
                 && state_ != GameState::kInstructions
                 && state_ != GameState::kLose
                 && state_ != GameState::kGameOver) {
-  
+        
+        // stop music if accessing menu from checkpoint
+        if (state_ == GameState::kCheckpoint) {
+          practice_game_.EndRound();
+        }
+        
         state_ = GameState::kMenu;
         checkpoint_timer.stop();
   

@@ -70,8 +70,8 @@ private:
   };
   
   const std::map<std::string, double> store_options = {
-          {"Food", 7.00},
-          {"Gas", 2.50},
+          {"Food", 4.00},
+          {"Gas", 2.00},
           {"Water", 3.00}
   };
   
