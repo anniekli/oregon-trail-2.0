@@ -57,3 +57,10 @@ from the number of hours you've practiced, which gets doubled. You also get
 an extra 500 points if you make it to the end.
 
 ![alt text](assets/game_over_page.jpg?raw=true)
+
+## Dependencies and External Libraries ##
+- Cinder (https://libcinder.org/docs/guides/tour/hello_cinder_chapter1.html)
+- Choreograph (https://github.com/sansumbrella/Choreograph).
+- SqliteModernCpp library (https://www.sqlitetutorial.net/download-install-sqlite/)
+- Cmake (https://cmake.org/install/)
+- Catch2 (https://github.com/catchorg/Catch2)
