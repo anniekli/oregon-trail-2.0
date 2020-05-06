@@ -238,7 +238,6 @@ void PrintText(const string& text, const C& color, const cinder::ivec2& size,
 }
 
 void MyApp::IncrementDay() {
-  required_hours += 5;
   
   if (player_.GetInventory().at("Gas") > 0
       && player_.GetInventory().at("Money") > 0) {
@@ -347,6 +346,22 @@ void MyApp::DrawTravel() {
   std::stringstream ss;
   ss << "Date: " << std::put_time(std::gmtime(&in_time_t), "%A, %B %d, %G");
   PrintText(ss.str(), color, size, {center.x, center.y - 300});
+  
+  size_t row = 0;
+  for (std::pair<std::string, int> item : player_.GetInventory()) {
+    if (item.first == "Food" || item.first == "Gas" || item.first == "Water") {
+      std::stringstream ss1;
+      ss1 << item.first << ": " << item.second;
+      PrintText(ss1.str(), color, size, {center.x, center.y - 300 + (++row *
+                                                                     25)});
+    }
+  }
+  
+  std::stringstream ss2;
+  ss2 << "Required Practice Hours: " << required_hours;
+  PrintText(ss2.str(), color, size, {center.x, center.y - 300 + (++row *
+                                                                 25)});
+  
 }
 
 void MyApp::DrawBackground() {
@@ -554,7 +569,7 @@ void MyApp::DrawInventory() {
 
 void MyApp::DrawLose() {
   const cinder::vec2 center = getWindowCenter();
-  const cinder::ivec2 size = {500, 50};
+  const cinder::ivec2 size = {500, 100};
   const Color color = Color::white();
   
   PrintText("You lost!", color, size, center);
@@ -716,6 +731,8 @@ void MyApp::keyDown(KeyEvent event) {
         // checkpoint
         if (distance_ == layout_.GetCurrentCheckpoint().GetDistance()) {
           layout_.UpdateNextCheckpoint();
+          required_hours += 5 * layout_.GetCurrentCheckpoint().GetDistance()
+                  / kspeed_;
           distance_ = 0;
         }
         
@@ -765,16 +782,6 @@ void MyApp::keyDown(KeyEvent event) {
       if (state_ == GameState::kEndPractice) {
         state_ = GameState::kMenu;
       
-      } else if (state_ != GameState::kMenu && state_ != GameState::kStart
-        && state_ != GameState::kInstructions
-        && state_ != GameState::kLose
-        && layout_.GetCurrentCheckpoint().GetName()
-        != layout_.GetEndCheckpoint()
-        && player_.GetInventory().at("Hours Practiced") >= required_hours) {
-        
-        state_ = GameState::kMenu;
-        checkpoint_timer.stop();
-        
       } else if ((state_ == GameState::kCheckpoint
         && layout_.GetCurrentCheckpoint().GetName()
            == layout_.GetEndCheckpoint())
@@ -787,8 +794,15 @@ void MyApp::keyDown(KeyEvent event) {
         
         // if you haven't practiced enough, you lose
         state_ = GameState::kLose;
+      } else if (state_ != GameState::kMenu && state_ != GameState::kStart
+                && state_ != GameState::kInstructions
+                && state_ != GameState::kLose) {
+  
+        state_ = GameState::kMenu;
+        checkpoint_timer.stop();
+  
       }
-      
+  
       break;
     }
   

@@ -17,7 +17,7 @@ namespace myapp {
   }
 
   void Player::AddToInventory(std::string item, int quantity) {
-    if (inventory.at(item) + quantity > 0) {
+    if (inventory.at(item) + quantity >= 0) {
       inventory.at(item) += quantity;
       
       // update score;
@@ -26,6 +26,9 @@ namespace myapp {
       } else {
         score += quantity;
       }
+      
+    } else {
+      inventory.at(item) = 0;
     }
   }
   

@@ -29,5 +29,9 @@
      of "go to store" in order to have a random chance of earning money.
 - **5/4/2020** Allow user to purchase items from store
     - Their purchase is reflected in the inventory
-- **5/5/2020** Checkpoint is drawn automatically when reached.
-    - [ ] Make animation smoother when traveling
+- **5/5/2020** Checkpoint is drawn automatically when reached and GameOver is
+ drawn at the end of the game
+    - Add player to leaderboard and show high scores and player's high scores
+    - End game when gas, money, or hours practiced is too low
+    - [x] Make animation smoother when traveling
+    
