@@ -38,6 +38,7 @@ enum class GameState {
   kEndPractice,
   kMenu,
   kInventory,
+  kLose,
   kGameOver
 };
 
@@ -99,6 +100,7 @@ private:
   int prob;
   int gig_money;
   bool buy_item;
+  int required_hours;
   
   
   void DrawBackground();
@@ -116,6 +118,8 @@ private:
   void PlayGig();
   void DrawGig();
   void DrawGameOver();
+  
+  void DrawLose();
 };
 
 }  // namespace myapp

@@ -85,6 +85,7 @@ void MyApp::setup() {
   store_ = "";
   current_date_ = system_clock::now();
   checkpoint_timer.stop();
+  required_hours = 0;
 }
 
 void MyApp::update() {
@@ -104,19 +105,17 @@ void MyApp::update() {
   }
   
   if (state_ == GameState::kTraveling) {
-    if (timeline.empty()) {
-      mOffset = 0.0f;
-    }
     
-    if (distance_ + kspeed_ >= layout_.GetCurrentCheckpoint().GetDistance()) {
-      timeline.apply( &mOffset ).rampTo((float) 2 * getWindowWidth(), 1.0);
-      timeline.step( 1.0 / 60.0 );
-    } else {
-      timeline.apply( &mOffset ).rampTo((float) 2 * getWindowWidth(), layout_
-      .GetCurrentCheckpoint().GetDistance() / kspeed_);
-      timeline.step( 1.0 / 60.0 );
+    int current_distance = layout_.GetCurrentCheckpoint().GetDistance();
+    
+    Time duration = current_distance / kspeed_;
+    if (duration < 1) {
+      duration = 1;
     }
-
+  
+    timeline.apply( &mOffset ).rampTo((float) 2 *
+       getWindowWidth(), duration);
+    timeline.step( 1.0 / 60.0 );
     
     // increment day every second
     if (checkpoint_timer.getSeconds() >= 1) {
@@ -125,9 +124,10 @@ void MyApp::update() {
       IncrementDay();
     }
     
-    if (distance_ == layout_.GetCurrentCheckpoint().GetDistance()) {
+    if (distance_ == current_distance) {
       state_ = GameState::kCheckpoint;
       timeline.clear();
+      mOffset = 0.0f;
     }
   
   }
@@ -152,6 +152,12 @@ void MyApp::draw() {
       DrawGameOver();
       return;
     }
+  
+    case GameState::kLose: {
+      DrawLose();
+      break;
+    }
+    
     case GameState::kStart: {
       DrawStart();
       break;
@@ -232,17 +238,40 @@ void PrintText(const string& text, const C& color, const cinder::ivec2& size,
 }
 
 void MyApp::IncrementDay() {
-  if (distance_ + kspeed_ < layout_.GetCurrentCheckpoint().GetDistance()) {
-    distance_ += kspeed_;
-    player_.AddToInventory("Gas", - (kspeed_ / 10));
+  required_hours += 5;
+  
+  if (player_.GetInventory().at("Gas") > 0
+      && player_.GetInventory().at("Money") > 0) {
+    
+    if (distance_ + kspeed_ < layout_.GetCurrentCheckpoint().GetDistance()) {
+      distance_ += kspeed_;
+      player_.AddToInventory("Gas", - (kspeed_ / 10));
+    } else {
+      player_.AddToInventory("Gas",- ((layout_.GetCurrentCheckpoint()
+                                               .GetDistance() - distance_) / 10));
+      distance_ = layout_.GetCurrentCheckpoint().GetDistance();
+    }
+    
+    if (player_.GetInventory().at("Food") >= 1) {
+      player_.AddToInventory("Food", -1);
+    } else {
+      player_.AddToInventory("Money", -14);
+    }
+  
+    if (player_.GetInventory().at("Water") >= 2) {
+      player_.AddToInventory("Water", -2);
+    } else {
+      player_.AddToInventory("Money", -10);
+    }
+    
+    current_date_ += std::chrono::hours(24);
+    
   } else {
-    player_.AddToInventory("Gas",- ((layout_.GetCurrentCheckpoint()
-    .GetDistance() - distance_) / 10));
-    distance_ = layout_.GetCurrentCheckpoint().GetDistance();
+    // if either gas or money = 0, the game is over:(
+    state_ = GameState::kLose;
   }
-  player_.AddToInventory("Food", -1);
-  player_.AddToInventory("Water", -1);
-  current_date_ += std::chrono::hours(24);
+
+
 }
 
 void MyApp::DrawStart() {
@@ -292,8 +321,10 @@ void MyApp::DrawTravel() {
   cinder::gl::enableAlphaBlending();
   cinder::gl::color(Color::white());
 
-  Rectf coord = {mOffset, 0, getWindowWidth() + mOffset, (float) getWindowHeight()};
-  Rectf coord2 = {0 - getWindowWidth() + mOffset, 0, mOffset, (float) getWindowHeight()};
+  Rectf coord = {mOffset, 0, getWindowWidth() + mOffset, (
+          float) getWindowHeight()};
+  Rectf coord2 = {0 - getWindowWidth() + mOffset, 0, mOffset, (float)
+                  getWindowHeight()};
   Rectf coord3 = {0 - (2 * getWindowWidth()) + mOffset, 0, mOffset - getWindowWidth(),
                   (float) getWindowHeight()};
 
@@ -394,6 +425,8 @@ void MyApp::DrawBuyItem() {
   } else {
     PrintText("Sorry, you don't have enough money to purchase this.", color,
             size,{center.x, (center.y - 150)});
+    PrintText("Press SPACE BAR to go back to the store.", color,
+              size,{center.x, (center.y - 100)});
   }
   
 }
@@ -455,7 +488,7 @@ void MyApp::DrawCheckpoint() {
   const cinder::ivec2 size = {getWindowWidth(), 50};
   const Color color = Color::white();
   
-  PrintText(checkpoint.GetName(), color, size, {center.x, center.y + 250},
+  PrintText(checkpoint.GetName(), color, size, {center.x, center.y + 225},
           ColorA::black(), TextBox::CENTER);
   PrintText(checkpoint.GetDescription(), color, {getWindowWidth(), 100},
           {center.x, center.y + 300}, ColorA::black(), TextBox::CENTER);
@@ -517,6 +550,33 @@ void MyApp::DrawInventory() {
   
   PrintText("Press SPACE BAR to return to menu", color, size,
           {center.x, (center.y - 200) + ++row * 50});
+}
+
+void MyApp::DrawLose() {
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 50};
+  const Color color = Color::white();
+  
+  PrintText("You lost!", color, size, center);
+  
+  if (player_.GetInventory().at("Gas") == 0) {
+    PrintText("You ran out of gas! Unfortunately, you're stranded and missed "
+              "the rest of your performances.", color, size, {center.x,
+                                                              center.y + 50});
+  } else if (player_.GetInventory().at("Money") == 0){
+    PrintText("You ran out of money! Unfortunately, you're stranded and missed "
+              "the rest of your performances.", color, size, {center.x,
+                                                              center.y + 50});
+  } else if (player_.GetInventory().at("Hours Practiced") < required_hours) {
+    PrintText("You didn't practice enough! You bombed your performance, and "
+              "after hearing about your mistakes, your other venues cancelled"
+              " on you.", color, size, {center.x, center.y + 50});
+  }
+  
+  PrintText("Press SPACE BAR to continue", color, size, {center.x,
+                                                         center.y + 200});
+  
+  
 }
 
 void MyApp::DrawGameOver() {
@@ -590,9 +650,10 @@ void MyApp::keyDown(KeyEvent event) {
         if (layout_.GetStartCheckpoint() ==
             layout_.GetCurrentCheckpoint().GetName()) {
     
-          // if you are just starting the game and leaving the first
-          // checkpoint, set the date leaving to now.
+          // if you are just starting the game, this should send you to the
+          // checkpoint
           state_ = GameState::kCheckpoint;
+          
         } else {
           state_ = GameState::kMenu;
         }
@@ -617,11 +678,11 @@ void MyApp::keyDown(KeyEvent event) {
           atoi(user_input) * store_options.at(store_)) {
           buy_item = true;
           BuyItem(atoi(user_input), store_);
-          user_input[0] = 0;
           store_.clear();
         } else {
           buy_item = false;
         }
+        user_input[0] = 0;
         break;
       }
   
@@ -706,18 +767,28 @@ void MyApp::keyDown(KeyEvent event) {
       
       } else if (state_ != GameState::kMenu && state_ != GameState::kStart
         && state_ != GameState::kInstructions
+        && state_ != GameState::kLose
         && layout_.GetCurrentCheckpoint().GetName()
-        != layout_.GetEndCheckpoint()) {
+        != layout_.GetEndCheckpoint()
+        && player_.GetInventory().at("Hours Practiced") >= required_hours) {
         
         state_ = GameState::kMenu;
         checkpoint_timer.stop();
         
-      } else if (state_ == GameState::kCheckpoint
+      } else if ((state_ == GameState::kCheckpoint
         && layout_.GetCurrentCheckpoint().GetName()
-           == layout_.GetEndCheckpoint()) {
+           == layout_.GetEndCheckpoint())
+           || state_ == GameState::kLose) {
         
         state_ = GameState::kGameOver;
+      
+      } else if (state_ == GameState::kCheckpoint
+        && player_.GetInventory().at("Hours Practiced") < required_hours) {
+        
+        // if you haven't practiced enough, you lose
+        state_ = GameState::kLose;
       }
+      
       break;
     }
   
@@ -732,6 +803,7 @@ void MyApp::keyDown(KeyEvent event) {
     }
   }
 }
+
 
 
   
