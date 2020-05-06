@@ -5,6 +5,7 @@
 #include <cinder/app/AppBase.h>
 #include <chrono>
 #include <boost/algorithm/string.hpp>
+#include <random>
 #include "practice_game.h"
 #include "cinder/audio/Voice.h"
 
@@ -12,7 +13,12 @@
 namespace myapp {
 
 std::pair<std::string, std::string> PracticeGame::GetRandomPiece() {
-  int rand_index = rand() % music_files.size();
+  
+  // the following code gives a more even distribution of random ints
+  std::mt19937 mt(rd());
+  std::uniform_int_distribution<int> dist(0, music_files.size() - 1);
+  int rand_index = dist( mt);
+  
   return std::make_pair(music_files[rand_index], music_answers[rand_index]);
 }
 

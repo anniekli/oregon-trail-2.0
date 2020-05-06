@@ -38,6 +38,7 @@ class PracticeGame {
   
   cinder::audio::VoiceRef music_piece;
   std::pair<std::string, std::string> music_pair;
+  std::random_device rd;
 };
 }
 #endif //FINALPROJECT_PRACTICE_GAME_H

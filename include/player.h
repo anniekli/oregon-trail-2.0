@@ -17,7 +17,7 @@ private:
   size_t score;
   
   std::map<std::string, int> inventory = {
-          {"Money", 300},
+          {"Money", 500},
           {"Gas", 0},
           {"Hours Practiced", 10},
           {"Food", 0},
