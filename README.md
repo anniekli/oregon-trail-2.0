@@ -28,8 +28,8 @@ at the store beforehand.
 ![alt text](assets/store_page.jpg?raw=true)
   
 Don't worry if you find yourself low on money, because while traveling, you can
-try to find a gig to play and earn money. However, you might not get a
-gig every time, so be careful!
+try to find a gig to play and earn money up to 3 times per day. However, you
+ might not get a gig every time, so be careful!
 
 ![alt text](assets/gig_page.jpg?raw=true)
 
@@ -53,8 +53,9 @@ life for a musician on the road.
 
 
 Your final score is the sum of all of the items in your inventory, aside
-from the number of hours you've practiced, which gets doubled. You also get
-an extra 500 points if you make it to the end.
+from the number of hours you've practiced, which gets doubled(not including
+ the 10 hours you start with). You also get an extra 500 points if you make
+  it to the end.
 
 ![alt text](assets/game_over_page.jpg?raw=true)
 

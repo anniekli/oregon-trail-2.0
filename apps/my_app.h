@@ -86,6 +86,8 @@ private:
   cinder::Timer checkpoint_timer;
   std::vector<Player> top_players_;
   std::vector<Player> player_high_scores_;
+  std::random_device rd;
+  
   
   
   std::chrono::time_point<std::chrono::system_clock> practice_game_start_;
@@ -94,15 +96,15 @@ private:
   bool check_answer{};
   const size_t kpractice_time_ = 20;
   const int kspeed_ = 250;
+  const int max_gigs = 3;
   int hours_practiced_{};
   int distance_{};
   int prob;
   int gig_money;
-  bool buy_item;
-  int required_hours;
+  bool buy_item{};
+  int required_hours{};
+  int num_gigs;
   
-  
-  void DrawBackground();
   void DrawInventory();
   void DrawPractice();
   void DrawEndPractice() const;
@@ -117,7 +119,6 @@ private:
   void PlayGig();
   void DrawGig();
   void DrawGameOver();
-  
   void DrawLose();
 };
 

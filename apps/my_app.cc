@@ -12,7 +12,6 @@
 #include <cinder/gl/gl.h>
 #include "cinder/audio/Voice.h"
 #include <gflags/gflags.h>
-#include <iostream>
 #include <nlohmann/json.hpp>
 
 
@@ -20,7 +19,6 @@
 #include <cmath>
 #include <string>
 #include <Windows.h>
-
 
 namespace myapp {
   
@@ -63,7 +61,10 @@ const char kDifferentFont[] = "Purisa";
   player_{FLAGS_name},
   prob{0},
   gig_money{50},
-  leaderboard_{cinder::app::getAssetPath(kDbPath).string()}
+  leaderboard_{cinder::app::getAssetPath(kDbPath).string()},
+  buy_item{true},
+  required_hours{0},
+  num_gigs{0}
 
 
   {}
@@ -84,7 +85,6 @@ void MyApp::setup() {
   store_ = "";
   current_date_ = system_clock::now();
   checkpoint_timer.stop();
-  required_hours = 0;
 }
 
 void MyApp::update() {
@@ -143,8 +143,7 @@ void MyApp::update() {
 }
 
 void MyApp::draw() {
-  cinder::gl::clear();
-  DrawBackground();
+  cinder::gl::clear(Color(0, 0, 0));
   
   switch (state_) {
     case GameState::kGameOver: {
@@ -237,41 +236,57 @@ void PrintText(const string& text, const C& color, const cinder::ivec2& size,
 }
 
 void MyApp::IncrementDay() {
+  num_gigs = 0;
   
-  if (player_.GetInventory().at("Gas") > 0
-      && player_.GetInventory().at("Money") > 0) {
-    
-    if (distance_ + kspeed_ < layout_.GetCurrentCheckpoint().GetDistance()) {
-      distance_ += kspeed_;
-      player_.AddToInventory("Gas", - (kspeed_ / 25));
+  if (state_ == GameState::kTraveling) {
+    if (player_.GetInventory().at("Gas") > 0) {
+      
+      // only if traveling(not practicing), use gas(proportionate to distance
+      // travelled)
+      if (distance_ + kspeed_ < layout_.GetCurrentCheckpoint().GetDistance()) {
+        distance_ += kspeed_;
+        player_.AddToInventory("Gas", -(kspeed_ / 25));
+        
+      } else {
+        player_.AddToInventory("Gas", -((layout_.GetCurrentCheckpoint()
+                                                 .GetDistance() - distance_) /
+                                        10));
+        distance_ = layout_.GetCurrentCheckpoint().GetDistance();
+      }
+      
     } else {
-      player_.AddToInventory("Gas",- ((layout_.GetCurrentCheckpoint()
-                                               .GetDistance() - distance_) / 10));
-      distance_ = layout_.GetCurrentCheckpoint().GetDistance();
+      // if player is traveling and runs out of gas, they lose
+      state_ = GameState::kLose;
     }
+  }
+  
+  // regardless of whether the player is travelling or not, consume food and
+  // water
+  if (player_.GetInventory().at("Money") > 0) {
     
+    // first, check that player has money to spend
+    // if player has food, consume. Otherwise, spend money
     if (player_.GetInventory().at("Food") >= 1) {
       player_.AddToInventory("Food", -1);
     } else {
       player_.AddToInventory("Money", -14);
     }
   
+    // same thing with water
     if (player_.GetInventory().at("Water") >= 2) {
       player_.AddToInventory("Water", -2);
     } else {
       player_.AddToInventory("Money", -10);
     }
     
+    // add one day
     current_date_ += std::chrono::hours(24);
     
-  } else if (player_.GetInventory().at("Gas") == 0
-      || ((player_.GetInventory().at("Food") == 0
+  } else if ((player_.GetInventory().at("Food") == 0
       || player_.GetInventory().at("Water") == 0)
-      && player_.GetInventory().at("Money") == 0)) {
+      && player_.GetInventory().at("Money") == 0) {
     
-    // if either gas = 0 or money = 0 while food and/or water = 0, the game is
-    // over:(
-    
+    // if money = 0 while food and/or water = 0, the game is over:(
     state_ = GameState::kLose;
   }
 
@@ -371,10 +386,6 @@ void MyApp::DrawTravel() {
   
 }
 
-void MyApp::DrawBackground() {
-  cinder::gl::clear(Color(0, 0, 0));
-}
-
 void MyApp::DrawMenu() {
   
   const cinder::vec2 center = getWindowCenter();
@@ -465,20 +476,34 @@ void MyApp::DrawGig() {
   const cinder::ivec2 size = {500, 50};
   const Color color = Color::white();
   
-  if (prob == 0) {
-    PrintText("You got the gig!", color, size, center);
-    std::stringstream ss;
-    ss << "You earned $" << gig_money << " from this gig.";
-    PrintText(ss.str(), color, size, {center.x, (center.y + 100)});
+  if (num_gigs > max_gigs) {
+    PrintText("Sorry, you can't play any more gigs today.", color, size,
+            center);
+    
   } else {
-    PrintText("Sorry, you didn't get the gig. Better luck next time!", color,
-            size, center);
+    
+    if (prob == 0) {
+      PrintText("You got the gig!", color, size, center);
+      std::stringstream ss;
+      ss << "You earned $" << gig_money << " from this gig.";
+      PrintText(ss.str(), color, size, {center.x, (center.y + 100)});
+      
+    } else {
+      PrintText("Sorry, you didn't get the gig. Better luck next time!", color,
+                size, center);
+    }
   }
 }
 
 void MyApp::PlayGig() {
-  prob = rand() % 5;
-  gig_money = rand() % 450 + 50;
+  
+  // the following code gives a more even distribution of random numbers
+  std::mt19937 mt(rd());
+  std::uniform_int_distribution<int> prob_dist(0, 5);
+  std::uniform_int_distribution<int> money_dist(50, 450);
+  
+  prob = prob_dist(mt);
+  gig_money = money_dist(mt);
   
   if (prob == 0) {
     player_.AddToInventory("Money", gig_money);
@@ -648,6 +673,8 @@ void MyApp::keyDown(KeyEvent event) {
     return;
   }
   
+  // allows user to access store and buy items
+  
   if (state_ == GameState::kStore && store_.empty()) {
     switch (event.getCode()) {
       case KeyEvent::KEY_1: {
@@ -698,6 +725,7 @@ void MyApp::keyDown(KeyEvent event) {
           buy_item = true;
           BuyItem(atoi(user_input), store_);
           store_.clear();
+          
         } else {
           buy_item = false;
         }
@@ -749,7 +777,10 @@ void MyApp::keyDown(KeyEvent event) {
           user_input[0] = 0;
       
         } else {
-          PlayGig();
+          if (num_gigs < max_gigs) {
+            PlayGig();
+            num_gigs++;
+          }
           state_ = GameState::kGig;
         }
         break;
@@ -780,7 +811,8 @@ void MyApp::keyDown(KeyEvent event) {
     
       if (state_ == GameState::kEndPractice) {
         state_ = GameState::kMenu;
-      
+        IncrementDay();
+  
       } else if ((state_ == GameState::kCheckpoint
         && layout_.GetCurrentCheckpoint().GetName()
            == layout_.GetEndCheckpoint())
@@ -796,9 +828,11 @@ void MyApp::keyDown(KeyEvent event) {
         
         // if you haven't practiced enough, you lose
         state_ = GameState::kLose;
-      } else if (state_ != GameState::kMenu && state_ != GameState::kStart
+      } else if (state_ != GameState::kMenu
+                && state_ != GameState::kStart
                 && state_ != GameState::kInstructions
-                && state_ != GameState::kLose) {
+                && state_ != GameState::kLose
+                && state_ != GameState::kGameOver) {
   
         state_ = GameState::kMenu;
         checkpoint_timer.stop();
