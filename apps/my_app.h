@@ -66,8 +66,7 @@ private:
           "Go to store",
           "Play a gig",
           "Practice",
-          "Check Inventory",
-          "Quit"
+          "Check Inventory"
   };
   
   const std::map<std::string, double> store_options = {

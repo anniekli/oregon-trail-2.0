@@ -244,7 +244,7 @@ void MyApp::IncrementDay() {
     
     if (distance_ + kspeed_ < layout_.GetCurrentCheckpoint().GetDistance()) {
       distance_ += kspeed_;
-      player_.AddToInventory("Gas", - (kspeed_ / 10));
+      player_.AddToInventory("Gas", - (kspeed_ / 25));
     } else {
       player_.AddToInventory("Gas",- ((layout_.GetCurrentCheckpoint()
                                                .GetDistance() - distance_) / 10));
@@ -265,8 +265,14 @@ void MyApp::IncrementDay() {
     
     current_date_ += std::chrono::hours(24);
     
-  } else {
-    // if either gas or money = 0, the game is over:(
+  } else if (player_.GetInventory().at("Gas") == 0
+      || ((player_.GetInventory().at("Food") == 0
+      || player_.GetInventory().at("Water") == 0)
+      && player_.GetInventory().at("Money") == 0)) {
+    
+    // if either gas = 0 or money = 0 while food and/or water = 0, the game is
+    // over:(
+    
     state_ = GameState::kLose;
   }
 
@@ -361,6 +367,8 @@ void MyApp::DrawTravel() {
   ss2 << "Required Practice Hours: " << required_hours;
   PrintText(ss2.str(), color, size, {center.x, center.y - 300 + (++row *
                                                                  25)});
+  PrintText("Press SPACE BAR to access the menu.", color, size,
+          {center.x,center.y - 300 + (++row * 25)});
   
 }
 
@@ -765,11 +773,6 @@ void MyApp::keyDown(KeyEvent event) {
         state_ = GameState::kInventory;
         break;
       }
-      
-      case KeyEvent::KEY_5: {
-        //quit
-        break;
-      }
 
     }
     return;
@@ -787,8 +790,11 @@ void MyApp::keyDown(KeyEvent event) {
            == layout_.GetEndCheckpoint())
            || state_ == GameState::kLose) {
         
+        if (state_ != GameState::kLose) {
+          player_.AddToInventory("Money", 500);
+        }
         state_ = GameState::kGameOver;
-      
+        
       } else if (state_ == GameState::kCheckpoint
         && player_.GetInventory().at("Hours Practiced") < required_hours) {
         
