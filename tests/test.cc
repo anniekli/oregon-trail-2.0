@@ -3,16 +3,13 @@
 #define CATCH_CONFIG_MAIN
 
 #include <catch2/catch.hpp>
-#include <cinder/Rand.h>
-
-#include <mylibrary/example.h>
 #include <layout.h>
 #include <player.h>
+#include <practice_game.h>
 
 using myapp::Layout;
 using myapp::Player;
-
-
+using myapp::PracticeGame;
 
 // test for all json-related functions
 
@@ -100,5 +97,15 @@ TEST_CASE("Test Player", "[player]") {
 // test PracticeGame class
 
 TEST_CASE("Test PracticeGame", "[practice-game]") {
-
+  PracticeGame practice_game_;
+  
+  SECTION("Check Answer") {
+    practice_game_.SetMusicPair({"", "Swan Lake"});
+    REQUIRE(practice_game_.CheckAnswer("swan lake"));
+  }
+  
+  SECTION("Get Music Piece") {
+    practice_game_.SetMusicPair({"", "Swan Lake"});
+    REQUIRE(practice_game_.GetMusicPiece() == "Swan Lake");
+  }
 }

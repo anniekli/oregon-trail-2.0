@@ -16,6 +16,8 @@ class PracticeGame {
   PracticeGame(){};
   std::pair<std::string, std::string> GetRandomPiece();
   void StartNewRound();
+  void SetMusicPair(std::pair<std::string, std::string> pair);
+  std::string GetMusicPiece();
   void EndRound();
   bool CheckAnswer(std::string user_input);
 

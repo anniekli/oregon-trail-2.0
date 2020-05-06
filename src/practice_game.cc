@@ -41,5 +41,12 @@ bool PracticeGame::CheckAnswer(std::string user_input) {
   return str == music_pair.second;
 }
 
+void PracticeGame::SetMusicPair(std::pair<std::string, std::string> pair) {
+  music_pair = pair;
+}
+
+std::string PracticeGame::GetMusicPiece() {
+  return music_pair.second;
+}
 
 }
