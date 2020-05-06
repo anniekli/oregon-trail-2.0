@@ -20,7 +20,7 @@ namespace myapp {
   }
   
   void LeaderBoard::AddScoreToLeaderBoard(Player& player) {
-    db_ << "INSERT INTO leaderboard (name,score) VALUES (?,?,?);"
+    db_ << "INSERT INTO leaderboard (name,score) VALUES (?,?);"
         << player.GetName()
         << player.GetScore();
   }

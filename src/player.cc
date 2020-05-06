@@ -6,8 +6,9 @@
 
 namespace myapp {
   
-  Player::Player() {
-    score = 0;
+  Player::Player(std::string name) {
+    this->name = name;
+    score = inventory.at("Money");
   }
   
   Player::Player(std::string name, size_t score) {
@@ -18,34 +19,26 @@ namespace myapp {
   void Player::AddToInventory(std::string item, int quantity) {
     if (inventory.at(item) + quantity > 0) {
       inventory.at(item) += quantity;
+      
+      // update score;
+      if (item == "Hours Practiced") {
+        score += 2 * quantity;
+      } else {
+        score += quantity;
+      }
     }
   }
   
-  const std::map<std::string, int> Player::GetInventory() {
+  std::map<std::string, int> Player::GetInventory() const {
     return inventory;
   }
   
-  const std::string Player::GetName() {
+  std::string Player::GetName() const {
     return name;
   }
   
-  void Player::SetName(std::string name) {
-    this->name = name;
-  }
-  
-  
-  const size_t Player::GetScore() {
-    for (std::pair<std::string, int> pair : inventory) {
-      if (pair.first == "Hours Practiced") {
-        score += 2 * pair.second;
-      } else {
-        score += pair.second;
-      }
-    }
+  size_t Player::GetScore() const {
     return score;
   }
-  
-
-  
   
 }

@@ -15,6 +15,7 @@ private:
   
   std::string name;
   size_t score;
+  
   std::map<std::string, int> inventory = {
           {"Money", 500},
           {"Gas", 0},
@@ -24,16 +25,12 @@ private:
   };
 
 public:
-  Player();
+  Player(std::string name);
   Player(std::string name, size_t score);
-  
-  std::string const GetName();
-  void SetName(std::string name);
-  size_t const GetScore();
-  void SetScore(size_t score);
-  std::map<std::string, int> const GetInventory();
+  std::string GetName() const;
+  size_t GetScore() const;
+  std::map<std::string, int> GetInventory() const;
   void AddToInventory(std::string item, int quantity);
-  
 };
   
 } // namespace myapp

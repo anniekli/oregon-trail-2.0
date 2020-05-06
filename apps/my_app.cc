@@ -37,6 +37,8 @@ using std::chrono::system_clock;
 using json = nlohmann::json;
 using namespace choreograph;
 
+const size_t kLimit = 3;
+const char kDbPath[] = "myapp.db";
 #if defined(CINDER_COCOA_TOUCH)
   const char kNormalFont[] = "Arial";
 const char kBoldFont[] = "Arial-BoldMT";
@@ -58,10 +60,12 @@ const char kDifferentFont[] = "Purisa";
   
   MyApp::MyApp()
   : state_{GameState::kStart},
-  player_name_{FLAGS_name},
   layout_{FLAGS_file},
+  player_{FLAGS_name},
   prob{0},
-  gig_money{50}
+  gig_money{50},
+  leaderboard_{cinder::app::getAssetPath(kDbPath).string()}
+
 
   {}
 
@@ -84,6 +88,21 @@ void MyApp::setup() {
 }
 
 void MyApp::update() {
+  if (state_ == GameState::kGameOver) {
+    
+    if (top_players_.empty()) {
+      leaderboard_.AddScoreToLeaderBoard(player_);
+      top_players_ = leaderboard_.RetrieveHighScores(kLimit);
+      player_high_scores_ = leaderboard_.RetrieveHighScores(player_, kLimit);
+      
+      // It is crucial the this vector be populated, given that `kLimit` > 0.
+      assert(!top_players_.empty());
+      assert(!player_high_scores_.empty());
+      
+    }
+    return;
+  }
+  
   if (state_ == GameState::kTraveling) {
     if (timeline.empty()) {
       mOffset = 0.0f;
@@ -129,6 +148,10 @@ void MyApp::draw() {
   DrawBackground();
   
   switch (state_) {
+    case GameState::kGameOver: {
+      DrawGameOver();
+      return;
+    }
     case GameState::kStart: {
       DrawStart();
       break;
@@ -363,18 +386,23 @@ void MyApp::DrawBuyItem() {
   const cinder::ivec2 size = {500, 50};
   const Color color = Color::white();
   
-  std::stringstream ss;
-  ss << "How much " << store_ << " would you like to buy?";
-  PrintText(ss.str(), color, size, {center.x, (center.y - 200)});
-  PrintText(user_input, color, size, {center.x, (center.y - 150)});
+  if (buy_item) {
+    std::stringstream ss;
+    ss << "How much " << store_ << " would you like to buy?";
+    PrintText(ss.str(), color, size, {center.x, (center.y - 200)});
+    PrintText(user_input, color, size, {center.x, (center.y - 150)});
+  } else {
+    PrintText("Sorry, you don't have enough money to purchase this.", color,
+            size,{center.x, (center.y - 150)});
+  }
+  
 }
 
 void MyApp::BuyItem(int quantity, std::string &item) {
   int price = store_options.at(item);
-  if (price * quantity <= player_.GetInventory().at("Money")) {
-    player_.AddToInventory("Money", - (price * quantity));
-    player_.AddToInventory(item, quantity);
-  }
+  
+  player_.AddToInventory("Money", - (price * quantity));
+  player_.AddToInventory(item, quantity);
 }
 
 void MyApp::DrawGig() {
@@ -429,11 +457,10 @@ void MyApp::DrawCheckpoint() {
   
   PrintText(checkpoint.GetName(), color, size, {center.x, center.y + 250},
           ColorA::black(), TextBox::CENTER);
-  PrintText(checkpoint.GetDescription(), color, {getWindowWidth(), 100}, {center
-  .x, center.y + 320}, ColorA::black(), TextBox::CENTER);
-  PrintText("Press SPACE BAR to continue.", color, size, {center.x, center
-  .y + 380},
-          ColorA::black(), TextBox::CENTER);
+  PrintText(checkpoint.GetDescription(), color, {getWindowWidth(), 100},
+          {center.x, center.y + 300}, ColorA::black(), TextBox::CENTER);
+  PrintText("Press SPACE BAR to continue.", color, size,
+          {center.x, center.y + 380}, ColorA::black(), TextBox::CENTER);
   }
 
 void MyApp::DrawPractice() {
@@ -490,6 +517,31 @@ void MyApp::DrawInventory() {
   
   PrintText("Press SPACE BAR to return to menu", color, size,
           {center.x, (center.y - 200) + ++row * 50});
+}
+
+void MyApp::DrawGameOver() {
+  if (top_players_.empty()) return;
+  
+  const cinder::vec2 center = getWindowCenter();
+  const cinder::ivec2 size = {500, 50};
+  const Color color = Color::white();
+  
+  size_t row = 0;
+  PrintText("High Scores:", color, size, {center.x, (center.y - 200)});
+  for (const Player player : top_players_) {
+    std::stringstream ss;
+    ss << player.GetName() << " - " << player.GetScore();
+    PrintText(ss.str(), color, size, {center.x, (center.y - 200) + (++row) * 50});
+  }
+  
+  ++row;
+  PrintText("Your High Scores:", color, size, {center.x, (center.y - 200) +
+  (++row) * 50});
+  for (const Player player : player_high_scores_) {
+    std::stringstream ss;
+    ss << player.GetName() << " - " << player.GetScore();
+    PrintText(ss.str(), color, size, {center.x, (center.y - 200) + (++row) * 50});
+  }
 }
 
 
@@ -554,15 +606,21 @@ void MyApp::keyDown(KeyEvent event) {
   if (!store_.empty()) {
     switch (event.getCode()) {
       case KeyEvent::KEY_SPACE: {
+        buy_item = true;
         store_.clear();
         break;
       }
       
       case KeyEvent::KEY_RETURN: {
-        if (strlen(user_input) > 0) {
+        // check that user input is valid and they can afford this amount
+        if (strlen(user_input) > 0 && player_.GetInventory().at("Money") >=
+          atoi(user_input) * store_options.at(store_)) {
+          buy_item = true;
           BuyItem(atoi(user_input), store_);
           user_input[0] = 0;
           store_.clear();
+        } else {
+          buy_item = false;
         }
         break;
       }
@@ -575,8 +633,10 @@ void MyApp::keyDown(KeyEvent event) {
       default:
         if (event.getChar() >= '0' && event.getChar() <= '9'
             && strlen(user_input) < kinput_quantity) {
+          
           user_input[strlen(user_input) + 1] = 0;
           user_input[strlen(user_input)] = event.getChar();
+          buy_item = true;
           break;
         }
     }
@@ -654,7 +714,7 @@ void MyApp::keyDown(KeyEvent event) {
         
       } else if (state_ == GameState::kCheckpoint
         && layout_.GetCurrentCheckpoint().GetName()
-        == layout_.GetEndCheckpoint()) {
+           == layout_.GetEndCheckpoint()) {
         
         state_ = GameState::kGameOver;
       }

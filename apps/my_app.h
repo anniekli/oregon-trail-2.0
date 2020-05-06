@@ -58,6 +58,7 @@ private:
   Player player_;
   PracticeGame practice_game_;
   Layout layout_;
+  LeaderBoard leaderboard_;
   
   const vector<string> menu_options = {
           "Continue traveling",
@@ -77,13 +78,14 @@ private:
   static const int kinput_length = 31;
   static const int kinput_quantity = 3;
   char user_input[kinput_length]{};
-  const std::string player_name_;
   cinder::gl::Texture2dRef car_image;
   cinder::gl::Texture2dRef background_image_right;
   cinder::gl::Texture2dRef background_image_left;
   choreograph::Timeline timeline;
   choreograph::Output<float> mOffset;
   cinder::Timer checkpoint_timer;
+  std::vector<Player> top_players_;
+  std::vector<Player> player_high_scores_;
   
   
   std::chrono::time_point<std::chrono::system_clock> practice_game_start_;
@@ -96,6 +98,7 @@ private:
   int distance_{};
   int prob;
   int gig_money;
+  bool buy_item;
   
   
   void DrawBackground();
@@ -112,6 +115,7 @@ private:
   void DrawBuyItem();
   void PlayGig();
   void DrawGig();
+  void DrawGameOver();
 };
 
 }  // namespace myapp
