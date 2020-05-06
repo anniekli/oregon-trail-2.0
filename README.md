@@ -15,7 +15,7 @@ The beloved childhood computer game gets revamped with Oregon Trail 2.0. This
 ![alt text](assets/krannert_checkpoint.png?raw=true)
 
    
-## How To Play##
+## How To Play ##
 You start at Krannert Center, UIUC. Before you leave, you need to buy some items
 from the store. To figure out how much of each item you should buy, each day
 you consume 1 unit of food, 2 units of water, and 10 gallons of gas. If you

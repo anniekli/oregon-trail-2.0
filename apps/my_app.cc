@@ -13,7 +13,6 @@
 #include "cinder/audio/Voice.h"
 #include <gflags/gflags.h>
 #include <iostream>
-#include <fstream>
 #include <nlohmann/json.hpp>
 
 
@@ -484,9 +483,6 @@ void MyApp::PlayGig() {
   if (prob == 0) {
     player_.AddToInventory("Money", gig_money);
   }
-  
-  std::cout << prob << std::endl;
-  std::cout << gig_money << std::endl;
   
 }
 
