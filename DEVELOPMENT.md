@@ -16,7 +16,6 @@
 - **4/30/2020** Moved StartNewRound() and CheckAnswer() to PracticeGame class
  and created JSON file to represent checkpoints
     - [x] Add timer so each Practice Game is 1 minute long
-    - [ ] Figure out how to print "Correct"/"Incorrect" message for longer
 - **5/1/2020** Added Layout class and Checkpoint class so you can access the
  properties of each checkpoint(name, description, image, and distance)
     -[x] Figure out how to access JSON file correctly
@@ -38,4 +37,5 @@
     - Limit number of gigs to 3 per day
     - Improve animation
     - Finish writing all tests
+    - Finish README.md
     
