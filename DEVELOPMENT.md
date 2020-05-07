@@ -38,4 +38,6 @@
     - Improve animation
     - Finish writing all tests
     - Finish README.md
+    - [x] Figure out how to print "Correct"/"Incorrect" message for longer
+
     

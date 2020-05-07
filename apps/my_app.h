@@ -88,13 +88,11 @@ private:
   std::vector<Player> top_players_;
   std::vector<Player> player_high_scores_;
   std::random_device rd;
-  
-  
-  
   std::chrono::time_point<std::chrono::system_clock> practice_game_start_;
   std::chrono::time_point<std::chrono::system_clock> current_date_;
   
   bool check_answer{};
+  bool show_message;
   const size_t kpractice_time_ = 20;
   const int kspeed_ = 250;
   const int max_gigs = 3;
@@ -105,6 +103,8 @@ private:
   bool buy_item{};
   int required_hours{};
   int num_gigs;
+  bool is_correct;
+  
   
   void DrawInventory();
   void DrawPractice();

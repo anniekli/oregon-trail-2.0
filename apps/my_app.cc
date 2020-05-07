@@ -64,7 +64,9 @@ const char kDifferentFont[] = "Purisa";
   leaderboard_{cinder::app::getAssetPath(kDbPath).string()},
   buy_item{true},
   required_hours{0},
-  num_gigs{0}
+  num_gigs{0},
+  show_message{false},
+  is_correct{false}
   {}
 
 void MyApp::setup() {
@@ -111,7 +113,7 @@ void MyApp::update() {
     }
   
     timeline.apply( &mOffset ).rampTo((float) current_distance *
-       getWindowWidth() / (2 * kspeed_), duration);
+       getWindowWidth() / kspeed_, duration);
     timeline.step( 1.0 / 60.0 );
     
     // increment day every second
@@ -484,7 +486,7 @@ void MyApp::DrawGig() {
   const cinder::ivec2 size = {500, 50};
   const Color color = Color::white();
   
-  if (num_gigs >= max_gigs) {
+  if (num_gigs > max_gigs) {
     PrintText("Sorry, you can't play any more gigs today.", color, size,
             center);
     
@@ -516,7 +518,7 @@ void MyApp::PlayGig() {
   prob = prob_dist(mt);
   gig_money = money_dist(mt);
   
-  if (prob == 0) {
+  if (prob == 0 && num_gigs < max_gigs) {
     player_.AddToInventory("Money", gig_money);
   }
   
@@ -564,17 +566,30 @@ void MyApp::DrawPractice() {
   PrintText("Type the name of the piece.", color, size, {center.x, (center.y -200)});
   PrintText(user_input, color, size, {center.x, (center.y - 150)});
   
+  
   if (check_answer) {
     if (practice_game_.CheckAnswer(user_input)) {
-      PrintText("Correct!", color, size, {center.x, (center.y - 100)});
+      
+      // this should only be run once per correct answer
+      is_correct = true;
       hours_practiced_ += 5;
       practice_game_.StartNewRound();
     } else {
-      PrintText("Incorrect, try again!", color, size, {center.x, (center.y -
-      100)});
+      is_correct = false;
+
     }
     user_input[0] = 0;
     check_answer = false;
+  }
+  
+  // show message until next key is pressed
+  if (show_message) {
+    if (is_correct) {
+      PrintText("Correct!", color, size, {center.x, (center.y - 100)});
+    } else {
+      PrintText("Incorrect, try again!", color, size,
+              {center.x, (center.y - 100)});
+    }
   }
 }
 
@@ -682,6 +697,7 @@ void MyApp::keyDown(KeyEvent event) {
     switch (event.getCode()) {
       case KeyEvent::KEY_RETURN: {
         check_answer = true;
+        show_message = true;
         break;
       }
       case KeyEvent::KEY_BACKSPACE: {
@@ -690,6 +706,7 @@ void MyApp::keyDown(KeyEvent event) {
       }
       default:
         check_answer = false;
+        show_message = false;
         if (strlen(user_input) < kinput_length) {
           user_input[strlen(user_input) + 1] = 0;
           user_input[strlen(user_input)] = event.getChar();
@@ -807,8 +824,8 @@ void MyApp::keyDown(KeyEvent event) {
         } else {
           if (num_gigs < max_gigs) {
             PlayGig();
-            num_gigs++;
           }
+          num_gigs++;
           state_ = GameState::kGig;
         }
         break;
@@ -818,6 +835,7 @@ void MyApp::keyDown(KeyEvent event) {
         hours_practiced_ = 0;
         user_input[0] = 0;
         check_answer = false;
+        show_message = false;
         state_ = GameState::kPractice;
         practice_game_start_ = system_clock::now();
         practice_game_.StartNewRound();
