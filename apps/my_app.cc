@@ -65,12 +65,9 @@ const char kDifferentFont[] = "Purisa";
   buy_item{true},
   required_hours{0},
   num_gigs{0}
-
-
   {}
 
 void MyApp::setup() {
-//  cinder::gl::Texture2d::create(getWindowWidth(), getWindowHeight());
   car_image = cinder::gl::Texture2d::create(loadImage(loadAsset("red_car.png")));
   background_image_right = cinder::gl::Texture2d::create(loadImage(loadAsset
           ("background_image_right.jpg")));
@@ -90,6 +87,7 @@ void MyApp::setup() {
 void MyApp::update() {
   if (state_ == GameState::kGameOver) {
     
+    // the following code is adapted from snake
     if (top_players_.empty()) {
       leaderboard_.AddScoreToLeaderBoard(player_);
       top_players_ = leaderboard_.RetrieveHighScores(kLimit);
@@ -112,8 +110,8 @@ void MyApp::update() {
       duration = 1;
     }
   
-    timeline.apply( &mOffset ).rampTo((float) 2 *
-       getWindowWidth(), duration);
+    timeline.apply( &mOffset ).rampTo((float) current_distance *
+       getWindowWidth() / (2 * kspeed_), duration);
     timeline.step( 1.0 / 60.0 );
     
     // increment day every second
@@ -343,13 +341,19 @@ void MyApp::DrawTravel() {
   cinder::gl::enableAlphaBlending();
   cinder::gl::color(Color::white());
 
-  Rectf coord = {mOffset, 0, getWindowWidth() + mOffset, (
+  float offset = mOffset;
+  while (offset > 2 * getWindowWidth()) {
+    offset -= 2 * getWindowWidth();
+  }
+  
+  std::cout << offset << std::endl;
+  
+  Rectf coord = {offset, 0, getWindowWidth() + offset, (
           float) getWindowHeight()};
-  Rectf coord2 = {0 - getWindowWidth() + mOffset, 0, mOffset, (float)
+  Rectf coord2 = {offset - getWindowWidth(), 0, offset, (float)
                   getWindowHeight()};
-  Rectf coord3 = {0 - (2 * getWindowWidth()) + mOffset, 0, mOffset - getWindowWidth(),
-                  (float) getWindowHeight()};
-
+  Rectf coord3 = { offset - (2 * getWindowWidth()), 0, offset -
+                  getWindowWidth(),(float) getWindowHeight()};
 
   const cinder::vec2 locp = {getWindowWidth() - car_image->getWidth(),
                              getWindowHeight() - car_image->getHeight()};
@@ -357,7 +361,8 @@ void MyApp::DrawTravel() {
   cinder::gl::draw(background_image_right, coord);
   cinder::gl::draw(background_image_left, coord2);
   cinder::gl::draw(background_image_right, coord3);
-
+  
+  
   cinder::gl::draw(car_image, locp);
   
   const cinder::vec2 center = getWindowCenter();

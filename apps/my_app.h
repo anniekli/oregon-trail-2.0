@@ -81,6 +81,7 @@ private:
   cinder::gl::Texture2dRef car_image;
   cinder::gl::Texture2dRef background_image_right;
   cinder::gl::Texture2dRef background_image_left;
+  
   choreograph::Timeline timeline;
   choreograph::Output<float> mOffset;
   cinder::Timer checkpoint_timer;
