@@ -34,4 +34,8 @@
     - Add player to leaderboard and show high scores and player's high scores
     - End game when gas, money, or hours practiced is too low
     - [x] Make animation smoother when traveling
+- **5/6/2020** Finishing up the game
+    - Limit number of gigs to 3 per day
+    - Improve animation
+    - Finish writing all tests
     
