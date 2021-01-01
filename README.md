@@ -1,4 +1,4 @@
-# Final Project: Oregon Trail 2.0
+# Oregon Trail 2.0
 
 Author: Annie Li
 
